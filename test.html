@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neuro Zap — Quiz</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Sliding theme toggle -->
+  <button class="theme-toggle" id="darkToggle" aria-label="Toggle dark mode">
+    <span class="t-sun">☀️</span>
+    <span class="t-moon">🌙</span>
+    <span class="t-knob"></span>
+  </button>
+
+  <div class="page">
+
+    <!-- QUIZ SECTION -->
+    <div class="card" id="quizSection">
+      <div class="test-header">
+        <span id="qCounter" class="q-counter">Question 1 / 20</span>
+        <span id="timer" class="timer">20:00</span>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-bar" id="progressBar" style="width:0%"></div>
+      </div>
+
+      <!-- Skip notice shown when looping back to skipped questions -->
+      <div class="skip-notice hidden" id="skipNotice">
+        ⚠️ Please answer your remaining skipped questions below.
+      </div>
+
+      <p class="question-text" id="qText">Loading question...</p>
+
+      <div class="options-grid" id="optionsGrid"></div>
+
+      <div class="nav-buttons">
+        <button class="btn btn-ghost" onclick="goPrev()">← Prev</button>
+        <button class="btn btn-ghost" id="skipBtn" onclick="goSkip()">Skip →</button>
+        <button class="btn btn-primary" id="nextBtn" onclick="goNext()">Next →</button>
+      </div>
+    </div>
+
+    <!-- RESULT SECTION -->
+    <div class="card hidden text-center" id="resultSection">
+      <div class="result-icon">🎯</div>
+      <h2 style="font-family:'Syne',sans-serif;margin-bottom:.5rem;">Quiz Complete!</h2>
+      <div class="result-score" id="resultScore">0 / 20</div>
+      <p class="result-iq" id="resultIQ">Estimated IQ: <strong>100</strong></p>
+
+      <input
+        type="text"
+        class="input-field"
+        id="nameInput"
+        placeholder="Enter your name to save..."
+        maxlength="30"
+      />
+      <button class="btn btn-primary btn-full" id="saveBtn">💾 Save to Leaderboard</button>
+      <a href="index.html" class="btn btn-outline btn-full mt-1">🏠 Back to Home</a>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    initDarkMode();
+    initTest();
+  </script>
+</body>
+</html>

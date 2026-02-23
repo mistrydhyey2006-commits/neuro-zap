@@ -1,0 +1,361 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+
+:root {
+  --bg: #f0ece4;
+  --surface: #ffffff;
+  --surface2: #f7f4ef;
+  --border: #e0d9ce;
+  --text: #1a1410;
+  --text2: #6b5f52;
+  --accent: #c84b2f;
+  --accent2: #e8874a;
+  --selected-bg: #fdf0ed;
+  --shadow: 0 4px 24px rgba(0,0,0,0.08);
+  --radius: 14px;
+  --transition: 0.25s ease;
+  --toggle-track: #d4cfc8;
+  --toggle-knob: #ffffff;
+}
+
+body.dark {
+  --bg: #0f0d0b;
+  --surface: #1c1915;
+  --surface2: #252118;
+  --border: #3a3228;
+  --text: #f0ece4;
+  --text2: #9b8f80;
+  --accent: #e05c38;
+  --accent2: #f09a5a;
+  --selected-bg: #2a1a15;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --toggle-track: #3a3228;
+  --toggle-knob: #f0ece4;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  transition: background var(--transition), color var(--transition);
+}
+
+h1, h2, h3 { font-family: 'Syne', sans-serif; }
+
+/* =============================================
+   SLIDING THEME TOGGLE
+   Light → knob LEFT, moon visible RIGHT
+   Dark  → knob RIGHT, sun visible LEFT
+============================================= */
+.theme-toggle {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 200;
+  width: 68px;
+  height: 34px;
+  border-radius: 34px;
+  background: var(--toggle-track);
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition);
+  /* no padding — icons are absolutely positioned */
+}
+
+/* Sun icon — sits on the LEFT side of the track */
+.theme-toggle .t-sun {
+  position: absolute;
+  left: 7px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  line-height: 1;
+  transition: opacity var(--transition);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Moon icon — sits on the RIGHT side of the track */
+.theme-toggle .t-moon {
+  position: absolute;
+  right: 7px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  line-height: 1;
+  transition: opacity var(--transition);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Light mode: knob covers left → sun is hidden, moon is visible */
+body:not(.dark) .theme-toggle .t-sun  { opacity: 0; }
+body:not(.dark) .theme-toggle .t-moon { opacity: 1; }
+
+/* Dark mode: knob covers right → sun is visible, moon is hidden */
+body.dark .theme-toggle .t-sun  { opacity: 1; }
+body.dark .theme-toggle .t-moon { opacity: 0; }
+
+/* The round sliding knob */
+.theme-toggle .t-knob {
+  position: absolute;
+  top: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--toggle-knob);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.28);
+  transition: left var(--transition), background var(--transition);
+  pointer-events: none;
+}
+
+/* Light mode: knob LEFT (left: 3px) */
+body:not(.dark) .theme-toggle .t-knob { left: 3px; }
+
+/* Dark mode: knob RIGHT (left: 68 - 26 - 4 = 38px) */
+body.dark .theme-toggle .t-knob { left: 38px; }
+
+/* =============================================
+   LAYOUT
+============================================= */
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 2.5rem;
+  box-shadow: var(--shadow);
+  width: 100%;
+  max-width: 560px;
+  transition: background var(--transition), border-color var(--transition);
+}
+
+/* =============================================
+   HOME
+============================================= */
+.home-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1;
+  letter-spacing: -2px;
+}
+.home-sub {
+  font-size: 1rem;
+  color: var(--text2);
+  margin: 0.5rem 0 2.5rem;
+  font-weight: 300;
+  letter-spacing: 0.5px;
+}
+.home-stats { display: flex; gap: 1.5rem; margin-bottom: 2.5rem; }
+.stat-box {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  text-align: center;
+  transition: background var(--transition), border-color var(--transition);
+}
+.stat-num { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+.stat-label { font-size: 0.75rem; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; }
+
+/* =============================================
+   BUTTONS
+============================================= */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.75rem;
+  border-radius: 50px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  border: 2px solid transparent;
+  text-decoration: none;
+}
+.btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn-primary:hover { background: #a83820; border-color: #a83820; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(200,75,47,0.35); }
+.btn-outline { background: transparent; color: var(--text); border-color: var(--border); }
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+.btn-ghost { background: var(--surface2); color: var(--text2); border-color: var(--border); }
+.btn-ghost:hover { color: var(--text); border-color: var(--text2); }
+.btn-full { width: 100%; }
+.btn-sm   { padding: 0.55rem 1.1rem; font-size: 0.85rem; }
+.home-buttons { display: flex; flex-direction: column; gap: 0.75rem; }
+
+/* =============================================
+   TEST PAGE
+============================================= */
+.test-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.timer { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 700; color: var(--accent); min-width: 80px; }
+.timer.warning { color: #e05c38; animation: pulse 1s infinite; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+.q-counter { font-size: 0.85rem; color: var(--text2); font-weight: 500; }
+
+.progress-wrap {
+  height: 6px;
+  background: var(--surface2);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 1.75rem;
+  border: 1px solid var(--border);
+}
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 10px;
+  transition: width 0.4s ease;
+}
+
+.question-text {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  color: var(--text);
+}
+
+/* Skip notice banner */
+.skip-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #fff8f0;
+  border: 1.5px solid var(--accent2);
+  border-radius: var(--radius);
+  padding: 0.65rem 1rem;
+  font-size: 0.83rem;
+  color: #a85e10;
+  margin-bottom: 1rem;
+  animation: fadeIn 0.3s ease;
+}
+body.dark .skip-notice { background: #2a1d0d; color: var(--accent2); }
+
+.options-grid { display: flex; flex-direction: column; gap: 0.65rem; margin-bottom: 1.75rem; }
+
+.option-btn {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem 1.25rem;
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  color: var(--text);
+  text-align: left;
+  transition: all var(--transition);
+}
+.option-btn:hover   { border-color: var(--accent); background: var(--selected-bg); color: var(--accent); }
+.option-btn.selected { border-color: var(--accent); background: var(--selected-bg); color: var(--accent); font-weight: 500; }
+
+.option-letter {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 700;
+  flex-shrink: 0;
+  transition: all var(--transition);
+  color: var(--text2);
+  font-family: 'Syne', sans-serif;
+}
+.option-btn.selected .option-letter,
+.option-btn:hover    .option-letter { background: var(--accent); color: #fff; }
+
+.nav-buttons { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.65rem; }
+
+/* =============================================
+   RESULT
+============================================= */
+.result-icon  { font-size: 3.5rem; margin-bottom: 1rem; }
+.result-score { font-family: 'Syne', sans-serif; font-size: 3rem; font-weight: 800; color: var(--accent); line-height: 1; margin-bottom: 0.25rem; }
+.result-iq    { font-size: 1rem; color: var(--text2); margin-bottom: 2rem; }
+.result-iq strong { color: var(--accent2); font-size: 1.3rem; font-family: 'Syne', sans-serif; }
+
+.input-field {
+  width: 100%;
+  padding: 0.85rem 1.25rem;
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  border-radius: 50px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  color: var(--text);
+  outline: none;
+  transition: border-color var(--transition);
+  margin-bottom: 0.75rem;
+}
+.input-field:focus        { border-color: var(--accent); }
+.input-field::placeholder { color: var(--text2); }
+
+/* =============================================
+   LEADERBOARD
+============================================= */
+.lb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.lb-title  { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 700; }
+.lb-list   { display: flex; flex-direction: column; gap: 0.6rem; }
+.lb-entry  { display: flex; align-items: center; gap: 1rem; padding: 0.9rem 1.1rem; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); transition: all var(--transition); }
+.lb-entry:hover { border-color: var(--accent); }
+.lb-rank   { font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 700; width: 26px; height: 26px; border-radius: 50%; background: var(--border); display: flex; align-items: center; justify-content: center; color: var(--text2); flex-shrink: 0; }
+.lb-entry:nth-child(1) .lb-rank { background: #f5c842; color: #5a3f00; }
+.lb-entry:nth-child(2) .lb-rank { background: #c0c0c0; color: #2a2a2a; }
+.lb-entry:nth-child(3) .lb-rank { background: #cd7f32; color: #fff; }
+.lb-name  { flex: 1; font-weight: 500; font-size: 0.95rem; }
+.lb-score { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; color: var(--accent); }
+.lb-iq    { font-size: 0.8rem; color: var(--text2); background: var(--surface); padding: 0.2rem 0.65rem; border-radius: 50px; border: 1px solid var(--border); }
+.lb-empty { text-align: center; padding: 3rem; color: var(--text2); font-size: 0.95rem; }
+
+/* =============================================
+   UTILITY
+============================================= */
+.hidden      { display: none !important; }
+.text-center { text-align: center; }
+.mt-1        { margin-top: 0.5rem; }
+.mt-2        { margin-top: 1rem; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 480px) {
+  .card { padding: 1.75rem 1.25rem; border-radius: 18px; }
+  .home-logo { font-size: 2.5rem; }
+  .question-text { font-size: 1.1rem; }
+  .nav-buttons { grid-template-columns: 1fr 1fr; }
+  .nav-buttons .btn:last-child { grid-column: 1 / -1; }
+  .home-stats { gap: 0.75rem; }
+}

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neuro Zap — Measure Your Mind</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Sliding theme toggle: moon on right (light), sun on left (dark) -->
+  <button class="theme-toggle" id="darkToggle" aria-label="Toggle dark mode">
+    <span class="t-sun">☀️</span>
+    <span class="t-moon">🌙</span>
+    <span class="t-knob"></span>
+  </button>
+
+  <div class="page">
+    <div class="card text-center">
+      <div class="home-logo">Neuro<span style="color:var(--text)">Zap</span></div>
+      <p class="home-sub">Measure your intelligence in 20 minutes</p>
+
+      <div class="home-stats">
+        <div class="stat-box">
+          <div class="stat-num">20</div>
+          <div class="stat-label">Questions</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">20<span style="font-size:1rem">min</span></div>
+          <div class="stat-label">Time Limit</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">IQ</div>
+          <div class="stat-label">Score</div>
+        </div>
+      </div>
+
+      <div class="home-buttons">
+        <a href="test.html" class="btn btn-primary btn-full">🧠 Start Neuro Zap</a>
+        <a href="leaderboard.html" class="btn btn-outline btn-full">🏆 View Leaderboard</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>initDarkMode();</script>
+</body>
+</html>
