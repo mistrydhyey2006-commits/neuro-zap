@@ -103,14 +103,13 @@ app.get('/api/me', authMiddleware, (req, res) => {
 
 // POST /api/results  — save a quiz result
 app.post('/api/results', (req, res) => {
-  const { score, total, iq, guest_name, token } = req.body;
+  const { score, total, iq, guest_name, token, is_daily } = req.body;
   if (score === undefined || !iq)
     return res.status(400).json({ error: 'score and iq are required' });
 
   let userId   = null;
   let guestName = guest_name || null;
 
-  // If token provided, link to user account
   if (token) {
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
@@ -120,29 +119,53 @@ app.post('/api/results', (req, res) => {
   }
 
   db.prepare(`
-    INSERT INTO results (user_id, guest_name, score, total, iq)
-    VALUES (?, ?, ?, ?, ?)
-  `).run(userId, guestName, score, total || 20, iq);
+    INSERT INTO results (user_id, guest_name, score, total, iq, is_daily)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).run(userId, guestName, score, total || 20, iq, is_daily ? 1 : 0);
 
   res.json({ success: true });
 });
 
-// GET /api/leaderboard  — top 50 results
+// GET /api/daily  — today's daily challenge question
+app.get('/api/daily', (req, res) => {
+  const today = new Date().toISOString().split('T')[0];
+  // Pick a deterministic question based on today's date
+  const all = db.prepare("SELECT * FROM questions WHERE active=1").all();
+  if (!all.length) {
+    // Fallback hardcoded daily if no DB questions
+    return res.json({ question: "What number comes next: 2, 4, 8, 16, ?", date: today });
+  }
+  const idx = new Date(today).getDate() % all.length;
+  const q   = all[idx];
+  res.json({ question: q.question, date: today, id: q.id });
+});
+
+// GET /api/leaderboard  — top 50, optional ?filter=daily
 app.get('/api/leaderboard', (req, res) => {
-  const rows = db.prepare(`
-    SELECT
-      COALESCE(u.username, r.guest_name, 'Anonymous') AS name,
-      r.score,
-      r.total,
-      r.iq,
-      r.taken_at
-    FROM results r
-    LEFT JOIN users u ON u.id = r.user_id
-    ORDER BY r.score DESC, r.iq DESC
-    LIMIT 50
-  `).all();
+  const isDaily = req.query.filter === 'daily';
+  const today   = new Date().toISOString().split('T')[0];
+
+  let rows;
+  if (isDaily) {
+    rows = db.prepare(`
+      SELECT COALESCE(u.username, r.guest_name, 'Anonymous') AS name,
+             r.score, r.total, r.iq, r.taken_at, r.is_daily
+      FROM results r LEFT JOIN users u ON u.id = r.user_id
+      WHERE date(r.taken_at) = ? AND r.is_daily = 1
+      ORDER BY r.score DESC, r.iq DESC LIMIT 50
+    `).all(today);
+  } else {
+    rows = db.prepare(`
+      SELECT COALESCE(u.username, r.guest_name, 'Anonymous') AS name,
+             r.score, r.total, r.iq, r.taken_at, r.is_daily
+      FROM results r LEFT JOIN users u ON u.id = r.user_id
+      ORDER BY r.score DESC, r.iq DESC LIMIT 50
+    `).all();
+  }
   res.json(rows);
 });
+
+
 
 // ============================================================
 //  QUESTIONS ROUTES
