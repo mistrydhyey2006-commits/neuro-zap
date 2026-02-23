@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Neuro Zap — Leaderboard</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
-  <!-- Sliding theme toggle -->
   <button class="theme-toggle" id="darkToggle" aria-label="Toggle dark mode">
     <span class="t-sun">☀️</span>
     <span class="t-moon">🌙</span>
@@ -22,8 +21,14 @@
         <a href="index.html" class="btn btn-outline btn-sm">← Home</a>
       </div>
 
+      <!-- Filter tabs -->
+      <div class="auth-tabs" style="margin-bottom:1.25rem">
+        <button class="auth-tab active" onclick="loadBoard('all', this)">All Time</button>
+        <button class="auth-tab" onclick="loadBoard('daily', this)">Today</button>
+      </div>
+
       <div class="lb-list" id="lbList">
-        <!-- populated by JS -->
+        <div class="lb-empty">Loading...</div>
       </div>
 
       <div class="mt-2">
@@ -35,7 +40,42 @@
   <script src="script.js"></script>
   <script>
     initDarkMode();
-    initLeaderboard();
+    loadBoard('all');
+
+    async function loadBoard(filter, el) {
+      // Update tab styles
+      document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+      if (el) el.classList.add('active');
+
+      const list = document.getElementById('lbList');
+      list.innerHTML = '<div class="lb-empty">Loading...</div>';
+
+      try {
+        const url = filter === 'daily' ? '/api/leaderboard?filter=daily' : '/api/leaderboard';
+        const res = await fetch(url);
+        const results = await res.json();
+
+        if (!results.length) {
+          list.innerHTML = '<div class="lb-empty">🎯 No results yet. Be the first!</div>';
+          return;
+        }
+
+        list.innerHTML = results.map((r, i) => `
+          <div class="lb-entry">
+            <span class="lb-rank">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</span>
+            <span class="lb-name">${escapeHtml(r.name)} ${r.is_daily ? '<span class="lb-daily">🔥 Daily</span>' : ''}</span>
+            <span class="lb-score">${r.score}/${r.total||20}</span>
+            <span class="lb-iq">IQ ${r.iq}</span>
+          </div>`).join('');
+      } catch {
+        list.innerHTML = '<div class="lb-empty">⚠️ Could not load results</div>';
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str||'').replace(/[&<>"']/g, c =>
+        ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
   </script>
 </body>
 </html>
