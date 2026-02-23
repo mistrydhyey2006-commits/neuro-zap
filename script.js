@@ -405,15 +405,26 @@ function finishQuiz() {
     if (answers[i] === q.answer) score++;
   });
 
-  const iq = Math.round(70 + (score / questions.length) * 60);
+  const iq    = Math.round(70 + (score / questions.length) * 60);
+  const level = getIQLevel(iq);
 
   document.getElementById('quizSection').classList.add('hidden');
-  const resultSection = document.getElementById('resultSection');
+  var resultSection = document.getElementById('resultSection');
   resultSection.classList.remove('hidden');
 
   document.getElementById('resultScore').textContent = score + ' / ' + questions.length;
-  document.getElementById('resultIQ').innerHTML =
-    'Estimated IQ: <strong>' + iq + '</strong>';
+  document.getElementById('resultIQ').innerHTML = 'Estimated IQ: <strong>' + iq + '</strong>';
+
+  var iconEl = document.getElementById('resultIcon');
+  if (iconEl) iconEl.textContent = level.icon;
+
+  var levelEl = document.getElementById('iqLevel');
+  if (levelEl) levelEl.textContent = level.label;
+
+  // Pre-fill name from login
+  var savedName = localStorage.getItem('nzUsername');
+  var nameInput = document.getElementById('nameInput');
+  if (nameInput && savedName) nameInput.value = savedName;
 
   document.getElementById('saveBtn').addEventListener('click', function() {
     saveResult(score, iq);
@@ -517,4 +528,45 @@ async function loadQuestionsFromAPI() {
   } catch {
     return null;  // will use ALL_QUESTIONS fallback
   }
+}
+
+// ================================================================
+//  SHARE FUNCTIONS
+// ================================================================
+function getIQLevel(iq) {
+  if (iq >= 130) return { label: '🌟 Genius', icon: '🌟' };
+  if (iq >= 120) return { label: '🔥 Superior', icon: '🔥' };
+  if (iq >= 110) return { label: '💡 Above Average', icon: '💡' };
+  if (iq >= 90)  return { label: '✅ Average', icon: '🎯' };
+  if (iq >= 80)  return { label: '📚 Below Average', icon: '📚' };
+  return { label: '💪 Keep Practicing', icon: '💪' };
+}
+
+function buildShareText(score, iq, total) {
+  const level = getIQLevel(iq);
+  return `${level.icon} I scored ${score}/${total} on the Neuro Zap IQ Test!\nMy estimated IQ: ${iq} — ${level.label}\n\nTest your IQ now 👉 ${window.location.origin}`;
+}
+
+function shareWhatsApp() {
+  const score = document.getElementById('resultScore').textContent;
+  const iq    = document.getElementById('resultIQ').querySelector('strong').textContent;
+  const text  = buildShareText(score.split('/')[0].trim(), iq, score.split('/')[1].trim());
+  window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+}
+
+function shareTwitter() {
+  const score = document.getElementById('resultScore').textContent;
+  const iq    = document.getElementById('resultIQ').querySelector('strong').textContent;
+  const text  = buildShareText(score.split('/')[0].trim(), iq, score.split('/')[1].trim());
+  window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(text), '_blank');
+}
+
+function copyResult() {
+  const score = document.getElementById('resultScore').textContent;
+  const iq    = document.getElementById('resultIQ').querySelector('strong').textContent;
+  const text  = buildShareText(score.split('/')[0].trim(), iq, score.split('/')[1].trim());
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.btn-copy');
+    if (btn) { btn.textContent = '✅ Copied!'; setTimeout(() => btn.textContent = '📋 Copy', 2000); }
+  });
 }
