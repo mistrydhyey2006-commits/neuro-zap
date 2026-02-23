@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Neuro Zap — Measure Your Mind</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Neuro Zap — IQ Test & Brain Challenge</title>
+  <meta name="description" content="Test your IQ with Neuro Zap — 20 real IQ questions including pattern recognition, spatial reasoning, and logic. Free online IQ test with leaderboard!"/>
+  <meta property="og:title" content="Neuro Zap — IQ Test"/>
+  <meta property="og:description" content="How smart are you? Take the Neuro Zap IQ test and find out!"/>
+  <meta property="og:type" content="website"/>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
-  <!-- Sliding theme toggle: moon on right (light), sun on left (dark) -->
   <button class="theme-toggle" id="darkToggle" aria-label="Toggle dark mode">
     <span class="t-sun">☀️</span>
     <span class="t-moon">🌙</span>
@@ -17,8 +20,19 @@
 
   <div class="page">
     <div class="card text-center">
+
       <div class="home-logo">Neuro<span style="color:var(--text)">Zap</span></div>
-      <p class="home-sub">Measure your intelligence in 20 minutes</p>
+      <p class="home-sub">Real IQ questions · Leaderboard · Daily Challenge</p>
+
+      <!-- Daily Challenge Banner -->
+      <div class="daily-banner" id="dailyBanner">
+        <div>
+          <div class="daily-badge">🔥 Daily Challenge</div>
+          <div class="daily-banner-title" style="margin-top:0.3rem">Today's Brain Teaser</div>
+          <div class="daily-banner-text" id="dailyPreview">Loading today's challenge...</div>
+        </div>
+        <a href="test.html?mode=daily" class="btn" style="background:rgba(255,255,255,0.2);color:#fff;border-color:rgba(255,255,255,0.4);white-space:nowrap;flex-shrink:0">Play →</a>
+      </div>
 
       <div class="home-stats">
         <div class="stat-box">
@@ -35,14 +49,58 @@
         </div>
       </div>
 
+      <!-- Auth row — shown when NOT logged in -->
+      <div class="auth-row" id="authRow">
+        <a href="login.html" class="btn btn-outline">👤 Login</a>
+        <a href="login.html#register" class="btn btn-ghost">✨ Register</a>
+      </div>
+
+      <!-- Logged in greeting -->
+      <div class="hidden" id="userGreeting" style="margin-bottom:1rem;font-size:0.9rem;color:var(--text2)">
+        👋 Welcome back, <strong id="greetName" style="color:var(--accent)"></strong>!
+        <a href="#" onclick="doLogout()" style="color:var(--text2);font-size:0.8rem;margin-left:0.5rem">Logout</a>
+      </div>
+
       <div class="home-buttons">
-        <a href="test.html" class="btn btn-primary btn-full">🧠 Start Neuro Zap</a>
+        <a href="test.html" class="btn btn-primary btn-full">🧠 Start Full IQ Test</a>
         <a href="leaderboard.html" class="btn btn-outline btn-full">🏆 View Leaderboard</a>
       </div>
+
     </div>
   </div>
 
   <script src="script.js"></script>
-  <script>initDarkMode();</script>
+  <script>
+    initDarkMode();
+    checkHomeAuth();
+    loadDailyPreview();
+
+    function checkHomeAuth() {
+      const token = localStorage.getItem('nzToken');
+      const name  = localStorage.getItem('nzUsername');
+      if (token && name) {
+        document.getElementById('authRow').classList.add('hidden');
+        document.getElementById('userGreeting').classList.remove('hidden');
+        document.getElementById('greetName').textContent = name;
+      }
+    }
+
+    function doLogout() {
+      localStorage.removeItem('nzToken');
+      localStorage.removeItem('nzUsername');
+      window.location.reload();
+    }
+
+    async function loadDailyPreview() {
+      try {
+        const res  = await fetch('/api/daily');
+        const data = await res.json();
+        document.getElementById('dailyPreview').textContent =
+          data.question ? data.question.substring(0, 60) + '…' : 'One special question awaits!';
+      } catch {
+        document.getElementById('dailyPreview').textContent = 'One special question awaits!';
+      }
+    }
+  </script>
 </body>
 </html>
