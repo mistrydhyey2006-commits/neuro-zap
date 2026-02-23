@@ -277,8 +277,7 @@ app.delete('/api/admin/clear-results', adminMiddleware, (req, res) => {
   res.json({ success: true });
 });
 
-
-app.get('/api/admin/stats', adminMiddleware, (req, res) => {
+// ── ADMIN: Stats ─────────────────────────────────────────────
   const totalUsers     = db.prepare("SELECT COUNT(*) AS c FROM users WHERE role='user'").get().c;
   const totalQuizzes   = db.prepare("SELECT COUNT(*) AS c FROM results").get().c;
   const totalQuestions = db.prepare("SELECT COUNT(*) AS c FROM questions WHERE active=1").get().c;
@@ -286,8 +285,12 @@ app.get('/api/admin/stats', adminMiddleware, (req, res) => {
   res.json({ totalUsers, totalQuizzes, totalQuestions, avgIQ });
 });
 
-// ── Catch-all → serve index.html for SPA navigation ─────────
+// ── Catch-all → serve index.html ONLY for unknown routes ────
 app.get('*', (req, res) => {
+  // If request looks like a file (has extension), let Express 404 it naturally
+  if (req.path.includes('.')) {
+    return res.status(404).send('Not found');
+  }
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
