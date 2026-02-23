@@ -231,7 +231,30 @@ app.delete('/api/admin/users/:id', adminMiddleware, (req, res) => {
   res.json({ success: true });
 });
 
-// ── ADMIN: Stats ─────────────────────────────────────────────
+// POST /api/admin/change-password
+app.post('/api/admin/change-password', adminMiddleware, (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword)
+    return res.status(400).json({ error: 'Both fields are required' });
+  if (newPassword.length < 6)
+    return res.status(400).json({ error: 'New password must be at least 6 characters' });
+
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
+  if (!user || !bcrypt.compareSync(currentPassword, user.password))
+    return res.status(401).json({ error: 'Current password is incorrect' });
+
+  const hash = bcrypt.hashSync(newPassword, 10);
+  db.prepare('UPDATE users SET password = ? WHERE id = ?').run(hash, req.user.id);
+  res.json({ success: true });
+});
+
+// DELETE /api/admin/clear-results
+app.delete('/api/admin/clear-results', adminMiddleware, (req, res) => {
+  db.prepare('DELETE FROM results').run();
+  res.json({ success: true });
+});
+
+
 app.get('/api/admin/stats', adminMiddleware, (req, res) => {
   const totalUsers     = db.prepare("SELECT COUNT(*) AS c FROM users WHERE role='user'").get().c;
   const totalQuizzes   = db.prepare("SELECT COUNT(*) AS c FROM results").get().c;
