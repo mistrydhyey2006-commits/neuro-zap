@@ -28,6 +28,7 @@ db.exec(`
     score      INTEGER NOT NULL,
     total      INTEGER NOT NULL DEFAULT 20,
     iq         INTEGER NOT NULL,
+    is_daily   INTEGER NOT NULL DEFAULT 0,
     taken_at   TEXT    NOT NULL DEFAULT (datetime('now'))
   );
 
@@ -55,6 +56,13 @@ if (!adminExists) {
     VALUES ('admin', 'admin@neurozap.com', ?, 'admin')
   `).run(hash);
   console.log('✅ Default admin created  →  username: admin  |  password: admin123');
+}
+
+// ---- Safe migrations (add columns if they don't exist) ----
+try {
+  db.exec(`ALTER TABLE results ADD COLUMN is_daily INTEGER NOT NULL DEFAULT 0`);
+} catch (e) {
+  // Column already exists — that's fine, ignore
 }
 
 module.exports = db;
