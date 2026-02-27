@@ -39,8 +39,9 @@ db.exec(`
     option_b    TEXT    NOT NULL,
     option_c    TEXT    NOT NULL,
     option_d    TEXT    NOT NULL,
-    answer      INTEGER NOT NULL,   -- 0=A, 1=B, 2=C, 3=D
+    answer      INTEGER NOT NULL,
     category    TEXT    NOT NULL DEFAULT 'general',
+    image_url   TEXT,
     active      INTEGER NOT NULL DEFAULT 1,
     created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
   );
@@ -59,10 +60,7 @@ if (!adminExists) {
 }
 
 // ---- Safe migrations (add columns if they don't exist) ----
-try {
-  db.exec(`ALTER TABLE results ADD COLUMN is_daily INTEGER NOT NULL DEFAULT 0`);
-} catch (e) {
-  // Column already exists — that's fine, ignore
-}
+try { db.exec(`ALTER TABLE results   ADD COLUMN is_daily  INTEGER NOT NULL DEFAULT 0`) } catch {}
+try { db.exec(`ALTER TABLE questions ADD COLUMN image_url TEXT`) } catch {}
 
 module.exports = db;
