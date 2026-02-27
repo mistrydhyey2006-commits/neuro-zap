@@ -225,6 +225,19 @@ function renderQuestion() {
   // Question text
   document.getElementById('qText').textContent = q.q;
 
+  // Question image (if any)
+  const imgWrap = document.getElementById('qImageWrap');
+  const imgEl   = document.getElementById('qImage');
+  if (imgWrap && imgEl) {
+    if (q.image_url) {
+      imgEl.src = q.image_url;
+      imgWrap.style.display = 'block';
+    } else {
+      imgWrap.style.display = 'none';
+      imgEl.src = '';
+    }
+  }
+
   // Options
   const grid    = document.getElementById('optionsGrid');
   const letters = ['A', 'B', 'C', 'D'];
