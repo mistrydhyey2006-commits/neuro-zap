@@ -8,16 +8,43 @@ const cors    = require('cors');
 const bcrypt  = require('bcryptjs');
 const jwt     = require('jsonwebtoken');
 const path    = require('path');
+const fs      = require('fs');
+const multer  = require('multer');
 const db      = require('./database');
 
-const app       = express();
-const PORT      = process.env.PORT || 3000;
+const app        = express();
+const PORT       = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'neurozap_secret_change_in_production';
+
+// ── Ensure uploads folder exists ─────────────────────────────
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+
+// ── Multer — image upload config ─────────────────────────────
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, UPLOADS_DIR),
+  filename:    (req, file, cb) => {
+    const ext  = path.extname(file.originalname).toLowerCase();
+    const name = 'q_' + Date.now() + ext;
+    cb(null, name);
+  }
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
+  fileFilter: (req, file, cb) => {
+    const allowed = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowed.includes(ext)) cb(null, true);
+    else cb(new Error('Only image files allowed'));
+  }
+});
 
 // ── Middleware ───────────────────────────────────────────────
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname)));   // serve HTML/CSS/JS files
+app.use(express.static(path.join(__dirname)));
+app.use('/uploads', express.static(UPLOADS_DIR));  // serve uploaded images
 
 // ── Auth helper ─────────────────────────────────────────────
 function authMiddleware(req, res, next) {
@@ -174,20 +201,19 @@ app.get('/api/leaderboard', (req, res) => {
 // GET /api/questions  — get all active questions (for the quiz)
 app.get('/api/questions', (req, res) => {
   const rows = db.prepare(`
-    SELECT id, question, option_a, option_b, option_c, option_d, answer, category
+    SELECT id, question, option_a, option_b, option_c, option_d, answer, category, image_url
     FROM questions WHERE active = 1
   `).all();
 
-  // Shuffle and return max 20
   const shuffled = rows.sort(() => Math.random() - 0.5).slice(0, 20);
 
-  // Format for frontend
   const formatted = shuffled.map(q => ({
-    id      : q.id,
-    q       : q.question,
-    options : [q.option_a, q.option_b, q.option_c, q.option_d],
-    answer  : q.answer,
-    category: q.category
+    id        : q.id,
+    q         : q.question,
+    options   : [q.option_a, q.option_b, q.option_c, q.option_d],
+    answer    : q.answer,
+    category  : q.category,
+    image_url : q.image_url || null
   }));
 
   res.json(formatted);
@@ -201,16 +227,23 @@ app.get('/api/admin/questions', adminMiddleware, (req, res) => {
   res.json(rows);
 });
 
-// POST /api/admin/questions  — add new question
+// POST /api/admin/upload-image — upload question image
+app.post('/api/admin/upload-image', adminMiddleware, upload.single('image'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No image uploaded' });
+  const url = '/uploads/' + req.file.filename;
+  res.json({ success: true, url });
+});
+
+// POST /api/admin/questions  — add new question (with optional image)
 app.post('/api/admin/questions', adminMiddleware, (req, res) => {
-  const { question, option_a, option_b, option_c, option_d, answer, category } = req.body;
+  const { question, option_a, option_b, option_c, option_d, answer, category, image_url } = req.body;
   if (!question || !option_a || !option_b || !option_c || !option_d || answer === undefined)
     return res.status(400).json({ error: 'All fields required' });
 
   const result = db.prepare(`
-    INSERT INTO questions (question, option_a, option_b, option_c, option_d, answer, category)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `).run(question, option_a, option_b, option_c, option_d, answer, category || 'general');
+    INSERT INTO questions (question, option_a, option_b, option_c, option_d, answer, category, image_url)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(question, option_a, option_b, option_c, option_d, answer, category || 'general', image_url || null);
 
   res.json({ success: true, id: result.lastInsertRowid });
 });
