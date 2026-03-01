@@ -103,9 +103,23 @@ app.post('/api/login', (req, res) => {
   if (!username || !password)
     return res.status(400).json({ error: 'Username and password required' });
 
+  const input = username.trim();
+
+  // If input looks like an email, validate it has proper format
+  const isEmail = input.includes('@');
+  if (isEmail) {
+    // Must match full email format: something@something.something
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(input)) {
+      return res.status(401).json({ error: 'Invalid username or password' });
+    }
+  }
+
+  // Exact match only — no partial matching
   const user = db.prepare(`
-    SELECT * FROM users WHERE username = ? OR email = ?
-  `).get(username.trim(), username.trim().toLowerCase());
+    SELECT * FROM users 
+    WHERE username = ? OR email = ?
+  `).get(input, input.toLowerCase());
 
   if (!user || !bcrypt.compareSync(password, user.password))
     return res.status(401).json({ error: 'Invalid username or password' });
