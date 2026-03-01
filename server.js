@@ -76,6 +76,19 @@ app.post('/api/register', (req, res) => {
   const { username, email, password } = req.body;
   if (!username || !email || !password)
     return res.status(400).json({ error: 'All fields required' });
+
+  // Strict email format validation — must be name@domain.tld
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email.trim())) {
+    return res.status(400).json({ error: 'Please enter a valid email address (e.g. name@gmail.com)' });
+  }
+
+  // Username must be 3-20 chars, letters/numbers/underscore only
+  const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+  if (!usernameRegex.test(username.trim())) {
+    return res.status(400).json({ error: 'Username must be 3-20 characters, letters and numbers only' });
+  }
+
   if (password.length < 6)
     return res.status(400).json({ error: 'Password must be at least 6 characters' });
 
@@ -86,10 +99,10 @@ app.post('/api/register', (req, res) => {
     `).run(username.trim(), email.trim().toLowerCase(), hash);
 
     const token = jwt.sign(
-      { id: result.lastInsertRowid, username, role: 'user' },
+      { id: result.lastInsertRowid, username: username.trim(), role: 'user' },
       JWT_SECRET, { expiresIn: '7d' }
     );
-    res.json({ token, username, role: 'user' });
+    res.json({ token, username: username.trim(), role: 'user' });
   } catch (e) {
     if (e.message.includes('UNIQUE'))
       return res.status(409).json({ error: 'Username or email already taken' });
