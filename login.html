@@ -100,6 +100,15 @@
       if (!username || !password) {
         msg.textContent = '⚠️ Please fill in all fields'; msg.className = 'auth-msg error'; return;
       }
+
+      // If looks like email, validate full format
+      if (username.includes('@')) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(username)) {
+          msg.textContent = '⚠️ Please enter a valid email address'; msg.className = 'auth-msg error'; return;
+        }
+      }
+
       try {
         const res  = await fetch('/api/login', {
           method: 'POST', headers: {'Content-Type':'application/json'},
@@ -126,6 +135,11 @@
 
       if (!username || !email || !password) {
         msg.textContent = '⚠️ Please fill in all fields'; msg.className = 'auth-msg error'; return;
+      }
+      // Validate full email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        msg.textContent = '⚠️ Please enter a valid email address (e.g. name@gmail.com)'; msg.className = 'auth-msg error'; return;
       }
       if (password.length < 6) {
         msg.textContent = '⚠️ Password must be at least 6 characters'; msg.className = 'auth-msg error'; return;
