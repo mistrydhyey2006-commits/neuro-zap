@@ -2,19 +2,12 @@
 //  database.js  —  SQLite setup using better-sqlite3
 // ============================================================
 const Database = require('better-sqlite3');
-const path = require('path');
-const fs = require('fs');
+const bcrypt   = require('bcryptjs');
+const path     = require('path');
 
-const DATA_DIR = path.join(__dirname, 'data');
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'neurozap.db');
+const db      = new Database(DB_PATH);
 
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-}
-
-const DB_PATH = process.env.DB_PATH || path.join(DATA_DIR, 'neurozap.db');
-
-const db = new Database(DB_PATH);
-// Enable WAL mode for better performance
 db.pragma('journal_mode = WAL');
 
 // ---- Create tables ----
@@ -24,7 +17,7 @@ db.exec(`
     username   TEXT    UNIQUE NOT NULL,
     email      TEXT    UNIQUE NOT NULL,
     password   TEXT    NOT NULL,
-    role       TEXT    NOT NULL DEFAULT 'user',   -- 'user' | 'admin'
+    role       TEXT    NOT NULL DEFAULT 'user',
     created_at TEXT    NOT NULL DEFAULT (datetime('now'))
   );
 
@@ -52,22 +45,30 @@ db.exec(`
     active      INTEGER NOT NULL DEFAULT 1,
     created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
   );
+
+  CREATE TABLE IF NOT EXISTS daily_questions (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    date       TEXT    UNIQUE NOT NULL,
+    question   TEXT    NOT NULL,
+    option_a   TEXT    NOT NULL,
+    option_b   TEXT    NOT NULL,
+    option_c   TEXT    NOT NULL,
+    option_d   TEXT    NOT NULL,
+    answer     INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT    NOT NULL DEFAULT (datetime('now'))
+  );
 `);
 
-// ---- Seed default admin if not exists ----
-const bcrypt = require('bcryptjs');
+// ---- Safe migrations ----
+try { db.exec(`ALTER TABLE results   ADD COLUMN is_daily  INTEGER NOT NULL DEFAULT 0`) } catch {}
+try { db.exec(`ALTER TABLE questions ADD COLUMN image_url TEXT`) } catch {}
+
+// ---- Seed default admin ----
 const adminExists = db.prepare("SELECT id FROM users WHERE role='admin' LIMIT 1").get();
 if (!adminExists) {
   const hash = bcrypt.hashSync('admin123', 10);
-  db.prepare(`
-    INSERT INTO users (username, email, password, role)
-    VALUES ('admin', 'admin@neurozap.com', ?, 'admin')
-  `).run(hash);
+  db.prepare(`INSERT INTO users (username, email, password, role) VALUES ('admin', 'admin@neurozap.com', ?, 'admin')`).run(hash);
   console.log('✅ Default admin created  →  username: admin  |  password: admin123');
 }
-
-// ---- Safe migrations (add columns if they don't exist) ----
-try { db.exec(`ALTER TABLE results   ADD COLUMN is_daily  INTEGER NOT NULL DEFAULT 0`) } catch {}
-try { db.exec(`ALTER TABLE questions ADD COLUMN image_url TEXT`) } catch {}
 
 module.exports = db;
