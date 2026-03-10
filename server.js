@@ -167,14 +167,58 @@ app.post('/api/results', (req, res) => {
   res.json({ success: true });
 });
 
-// GET /api/daily
+// GET /api/daily — today's daily challenge (checks custom table first)
 app.get('/api/daily', (req, res) => {
   const today = new Date().toISOString().split('T')[0];
-  const all   = db.prepare('SELECT * FROM questions WHERE active=1').all();
+  // Check if admin set a custom daily question for today
+  const custom = db.prepare('SELECT * FROM daily_questions WHERE date = ?').get(today);
+  if (custom) {
+    return res.json({
+      question  : custom.question,
+      options   : [custom.option_a, custom.option_b, custom.option_c, custom.option_d],
+      answer    : custom.answer,
+      date      : today,
+      is_custom : true
+    });
+  }
+  // Fallback: pick from questions bank
+  const all = db.prepare('SELECT * FROM questions WHERE active=1').all();
   if (!all.length)
-    return res.json({ question: 'What number comes next: 2, 4, 8, 16, ?', date: today });
+    return res.json({ question: 'What number comes next: 2, 4, 8, 16, ?', options: ['32','24','18','20'], answer: 0, date: today });
   const q = all[new Date(today).getDate() % all.length];
-  res.json({ question: q.question, date: today, id: q.id });
+  res.json({
+    question  : q.question,
+    options   : [q.option_a, q.option_b, q.option_c, q.option_d],
+    answer    : q.answer,
+    date      : today,
+    is_custom : false
+  });
+});
+
+// ── ADMIN: Daily questions CRUD ──────────────────────────────
+app.get('/api/admin/daily-questions', adminMiddleware, (req, res) => {
+  res.json(db.prepare('SELECT * FROM daily_questions ORDER BY date DESC').all());
+});
+
+app.post('/api/admin/daily-questions', adminMiddleware, (req, res) => {
+  const { question, option_a, option_b, option_c, option_d, answer, date } = req.body;
+  if (!question || !option_a || !option_b || !option_c || !option_d)
+    return res.status(400).json({ error: 'All fields required' });
+  const today = new Date().toISOString().split('T')[0];
+  try {
+    db.prepare(`
+      INSERT OR REPLACE INTO daily_questions (date, question, option_a, option_b, option_c, option_d, answer)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(date || today, question, option_a, option_b, option_c, option_d, answer || 0);
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.delete('/api/admin/daily-questions/:id', adminMiddleware, (req, res) => {
+  db.prepare('DELETE FROM daily_questions WHERE id = ?').run(req.params.id);
+  res.json({ success: true });
 });
 
 // GET /api/leaderboard
