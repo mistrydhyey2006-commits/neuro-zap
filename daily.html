@@ -17,60 +17,55 @@
   <div class="page">
 
     <!-- QUESTION CARD -->
-    <div class="card" id="dailyCard" style="max-width:560px">
+    <div class="card" id="dailyCard" style="max-width:520px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+        <a href="index.html" class="btn btn-ghost btn-sm">← Home</a>
         <div class="daily-chip" style="margin:0">🔥 Daily Challenge</div>
-        <span id="dailyDate" style="font-size:0.82rem;color:var(--text2)"></span>
+        <div id="dailyDate" style="font-size:0.8rem;color:var(--text2)"></div>
       </div>
 
       <div id="loadingState" style="text-align:center;padding:2rem;color:var(--text2)">
-        Loading today's challenge...
+        Loading today's challenge... 🧠
       </div>
 
       <div id="questionState" class="hidden">
-        <p class="question-text" id="dcQuestion"></p>
-        <div class="options-grid" id="dcOptions"></div>
-        <button class="btn btn-primary btn-full" id="submitBtn" onclick="submitDaily()" disabled style="opacity:0.5">
+        <div id="qImageWrapD" style="display:none;margin-bottom:1rem;text-align:center">
+          <img id="qImageD" src="" alt="Question image" style="max-width:100%;max-height:220px;border-radius:12px;border:1.5px solid var(--border);object-fit:contain"/>
+        </div>
+        <p class="question-text" id="dailyQText"></p>
+        <div class="options-grid" id="dailyOptions"></div>
+        <button class="btn btn-primary btn-full" id="submitBtn" onclick="submitAnswer()" disabled style="opacity:0.5">
           Submit Answer
         </button>
       </div>
 
-      <div id="noQuestionState" class="hidden" style="text-align:center;padding:2rem">
-        <div style="font-size:2.5rem;margin-bottom:1rem">😴</div>
-        <p style="color:var(--text2);margin-bottom:1rem">No daily challenge set for today yet.<br/>Check back later!</p>
-        <a href="index.html" class="btn btn-outline">← Back to Home</a>
-      </div>
-
-      <div id="resultState" class="hidden" style="text-align:center">
-        <div id="dcResultIcon" style="font-size:3rem;margin-bottom:0.75rem"></div>
-        <div id="dcResultTitle" style="font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:700;margin-bottom:0.5rem"></div>
-        <div id="dcResultMsg" style="color:var(--text2);font-size:0.95rem;margin-bottom:1.25rem"></div>
-
-        <!-- Show correct answer -->
-        <div id="dcAnswerReveal" style="
-          background:var(--surface2);border:1.5px solid var(--border);
-          border-radius:12px;padding:1rem;margin-bottom:1.25rem;text-align:left
-        ">
-          <div style="font-size:0.78rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.4rem">Correct Answer</div>
-          <div id="dcCorrectAnswer" style="font-weight:600;color:var(--correct,#2d9e6b);font-size:1rem"></div>
-        </div>
-
-        <div class="share-row" style="justify-content:center;margin-bottom:1rem">
-          <button class="btn btn-whatsapp btn-sm" onclick="shareDailyResult()">📱 Share</button>
-          <button class="btn btn-copy btn-sm" onclick="copyDailyResult()">📋 Copy</button>
-        </div>
-
-        <a href="test.html" class="btn btn-primary btn-full">🧠 Take Full IQ Test</a>
-        <a href="index.html" class="btn btn-outline btn-full mt-1">🏠 Back to Home</a>
-      </div>
-
-      <div id="alreadyDoneState" class="hidden" style="text-align:center;padding:1rem">
+      <div id="alreadyDone" class="hidden" style="text-align:center;padding:1rem">
         <div style="font-size:2.5rem;margin-bottom:0.75rem">✅</div>
-        <p style="font-weight:600;margin-bottom:0.5rem">You already completed today's challenge!</p>
-        <p style="color:var(--text2);font-size:0.9rem;margin-bottom:1.25rem">Come back tomorrow for a new one 🔥</p>
-        <a href="test.html" class="btn btn-primary btn-full">🧠 Take Full IQ Test</a>
-        <a href="index.html" class="btn btn-outline btn-full mt-1">🏠 Back to Home</a>
+        <h3 style="font-family:'Syne',sans-serif;margin-bottom:0.5rem">Already completed today!</h3>
+        <p style="color:var(--text2);font-size:0.9rem;margin-bottom:1.5rem">Come back tomorrow for a new challenge.</p>
+        <a href="index.html" class="btn btn-primary">🏠 Back to Home</a>
       </div>
+    </div>
+
+    <!-- RESULT CARD -->
+    <div class="card hidden text-center" id="dailyResult" style="max-width:520px">
+      <div id="resultEmoji" style="font-size:3rem;margin-bottom:0.75rem">🎯</div>
+      <h2 style="font-family:'Syne',sans-serif;margin-bottom:0.5rem" id="resultTitle">Answer submitted!</h2>
+      <p style="color:var(--text2);margin-bottom:0.5rem" id="resultMsg"></p>
+
+      <div id="correctAnswerBox" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:1rem;margin:1rem 0;text-align:left">
+        <div style="font-size:0.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.3rem">Correct Answer</div>
+        <div id="correctAnswerText" style="font-weight:600;color:var(--accent)"></div>
+      </div>
+
+      <!-- Share -->
+      <div class="share-row" style="justify-content:center;margin-bottom:1rem">
+        <button class="btn btn-whatsapp btn-sm" onclick="shareDailyWhatsApp()">📱 WhatsApp</button>
+        <button class="btn btn-twitter btn-sm" onclick="shareDailyTwitter()">🐦 Twitter</button>
+        <button class="btn btn-copy btn-sm" onclick="copyDailyResult()">📋 Copy</button>
+      </div>
+
+      <a href="index.html" class="btn btn-outline btn-full">🏠 Back to Home</a>
     </div>
 
   </div>
@@ -79,122 +74,107 @@
   <script>
     initDarkMode();
 
-    const today        = new Date().toISOString().split('T')[0];
-    const storageKey   = 'nz_daily_' + today;
-    let   dailyData    = null;
-    let   selectedAns  = null;
+    const today    = new Date().toISOString().split('T')[0];
+    const doneKey  = 'nzDaily_' + today;
+    let   dailyData = null;
+    let   selected  = null;
 
-    // Show today's date
-    document.getElementById('dailyDate').textContent = new Date().toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long' });
+    document.getElementById('dailyDate').textContent = today;
 
     // Check if already done today
-    if (localStorage.getItem(storageKey)) {
-      showState('alreadyDone');
+    if (localStorage.getItem(doneKey)) {
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('alreadyDone').classList.remove('hidden');
     } else {
-      loadDaily();
+      loadDailyQuestion();
     }
 
-    async function loadDaily() {
+    async function loadDailyQuestion() {
       try {
         const res  = await fetch('/api/daily');
         dailyData  = await res.json();
 
-        if (!dailyData.question) {
-          showState('noQuestion');
-          return;
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('questionState').classList.remove('hidden');
+        document.getElementById('dailyQText').textContent = dailyData.question;
+
+        // Image
+        if (dailyData.image_url) {
+          document.getElementById('qImageD').src = dailyData.image_url;
+          document.getElementById('qImageWrapD').style.display = 'block';
         }
 
-        document.getElementById('dcQuestion').textContent = dailyData.question;
-        const letters = ['A','B','C','D'];
-        const grid = document.getElementById('dcOptions');
-        grid.innerHTML = '';
-        dailyData.options.forEach((opt, i) => {
+        // Options
+        const letters  = ['A','B','C','D'];
+        const optionsEl = document.getElementById('dailyOptions');
+        optionsEl.innerHTML = '';
+        (dailyData.options || ['Option A','Option B','Option C','Option D']).forEach((opt, i) => {
           const btn = document.createElement('button');
           btn.className = 'option-btn';
           btn.innerHTML = `<span class="option-letter">${letters[i]}</span>${opt}`;
-          btn.addEventListener('click', () => selectOption(i, btn));
-          grid.appendChild(btn);
+          btn.addEventListener('click', () => selectDailyAnswer(i, btn));
+          optionsEl.appendChild(btn);
         });
-
-        showState('question');
       } catch {
-        document.getElementById('loadingState').textContent = '❌ Could not load challenge. Check your connection.';
+        document.getElementById('loadingState').textContent = '⚠️ Could not load today\'s challenge. Try again later.';
       }
     }
 
-    function selectOption(index, btn) {
-      document.querySelectorAll('#dcOptions .option-btn').forEach(b => b.classList.remove('selected'));
+    function selectDailyAnswer(i, btn) {
+      selected = i;
+      document.querySelectorAll('#dailyOptions .option-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
-      selectedAns = index;
       const submitBtn = document.getElementById('submitBtn');
       submitBtn.disabled = false;
       submitBtn.style.opacity = '1';
     }
 
-    function submitDaily() {
-      if (selectedAns === null) return;
-      const correct = selectedAns === dailyData.answer;
-      const letters = ['A','B','C','D'];
+    function submitAnswer() {
+      if (selected === null) return;
+      const correct  = dailyData.answer;
+      const isCorrect = selected === correct;
+      const letters  = ['A','B','C','D'];
+      const opts     = dailyData.options || ['Option A','Option B','Option C','Option D'];
 
-      // Mark correct/wrong visually
-      document.querySelectorAll('#dcOptions .option-btn').forEach((btn, i) => {
-        if (i === dailyData.answer) btn.style.borderColor = '#2d9e6b';
-        if (i === selectedAns && !correct) btn.style.borderColor = '#e05c5c';
-      });
+      // Mark today as done
+      localStorage.setItem(doneKey, isCorrect ? 'correct' : 'wrong');
 
-      // Save to localStorage so they can't redo today
-      localStorage.setItem(storageKey, JSON.stringify({ answer: selectedAns, correct }));
+      // Show result
+      document.getElementById('dailyCard').classList.add('hidden');
+      const resultCard = document.getElementById('dailyResult');
+      resultCard.classList.remove('hidden');
 
-      // Show result after short delay
-      setTimeout(() => {
-        if (correct) {
-          document.getElementById('dcResultIcon').textContent = '🎉';
-          document.getElementById('dcResultTitle').textContent = 'Correct!';
-          document.getElementById('dcResultTitle').style.color = '#2d9e6b';
-          document.getElementById('dcResultMsg').textContent = "Brilliant! You got today's challenge right!";
-        } else {
-          document.getElementById('dcResultIcon').textContent = '😅';
-          document.getElementById('dcResultTitle').textContent = 'Not quite!';
-          document.getElementById('dcResultTitle').style.color = '#e05c5c';
-          document.getElementById('dcResultMsg').textContent = "Better luck tomorrow! Here's the correct answer:";
-        }
-
-        document.getElementById('dcCorrectAnswer').textContent =
-          `${letters[dailyData.answer]}: ${dailyData.options[dailyData.answer]}`;
-
-        showState('result');
-      }, 800);
+      document.getElementById('resultEmoji').textContent  = isCorrect ? '🎉' : '😅';
+      document.getElementById('resultTitle').textContent  = isCorrect ? 'Correct!' : 'Not quite!';
+      document.getElementById('resultMsg').textContent    = isCorrect
+        ? 'You solved today\'s brain teaser! Come back tomorrow for another.'
+        : 'Better luck tomorrow! Here\'s the correct answer:';
+      document.getElementById('correctAnswerText').textContent =
+        `${letters[correct]}: ${opts[correct]}`;
     }
 
-    function showState(name) {
-      ['loading','question','noQuestion','result','alreadyDone'].forEach(s => {
-        document.getElementById(s + 'State').classList.add('hidden');
-      });
-      document.getElementById(name + 'State').classList.remove('hidden');
+    // Share functions
+    function buildDailyShareText(isCorrect) {
+      const status = isCorrect ? '✅ Got it right!' : '❌ Missed it!';
+      return `🔥 Neuro Zap Daily Challenge — ${today}\n${status}\n\nTry today's challenge 👉 ${window.location.origin}/daily.html`;
     }
 
-    function shareDailyResult() {
-      const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
-      const text = saved.correct
-        ? `🔥 I got today's Neuro Zap Daily Challenge right! 🎉\nCan you beat it? 👉 ${window.location.origin}/daily.html`
-        : `🔥 Tried today's Neuro Zap Daily Challenge!\nThink you can get it? 👉 ${window.location.origin}/daily.html`;
-      window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+    function shareDailyWhatsApp() {
+      const done = localStorage.getItem(doneKey);
+      window.open('https://wa.me/?text=' + encodeURIComponent(buildDailyShareText(done === 'correct')), '_blank');
+    }
+
+    function shareDailyTwitter() {
+      const done = localStorage.getItem(doneKey);
+      window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(buildDailyShareText(done === 'correct')), '_blank');
     }
 
     function copyDailyResult() {
-      const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
-      const text = saved.correct
-        ? `🔥 I got today's Neuro Zap Daily Challenge right! 🎉\n${window.location.origin}/daily.html`
-        : `🔥 Tried today's Neuro Zap Daily Challenge!\n${window.location.origin}/daily.html`;
-      navigator.clipboard.writeText(text).then(() => showToast('📋 Copied!'));
-    }
-
-    function showToast(msg) {
-      const t = document.createElement('div');
-      t.className = 'toast';
-      t.textContent = msg;
-      document.body.appendChild(t);
-      setTimeout(() => t.remove(), 2500);
+      const done = localStorage.getItem(doneKey);
+      navigator.clipboard.writeText(buildDailyShareText(done === 'correct')).then(() => {
+        const btn = document.querySelector('.btn-copy');
+        if (btn) { btn.textContent = '✅ Copied!'; setTimeout(() => btn.textContent = '📋 Copy', 2000); }
+      });
     }
   </script>
 </body>
