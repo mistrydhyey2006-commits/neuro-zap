@@ -38,7 +38,7 @@ const upload = multer({
 // ── Middleware ───────────────────────────────────────────────
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname), { etag:false, lastModified:false, setHeaders:(res)=>{ res.setHeader("Cache-Control","no-store,no-cache,must-revalidate"); res.setHeader("Pragma","no-cache"); res.setHeader("Expires","0"); } }));
 app.use('/uploads', express.static(UPLOADS_DIR));
 
 // ── Helpers ──────────────────────────────────────────────────
