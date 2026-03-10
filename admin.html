@@ -23,6 +23,23 @@
     .nav-item:hover, .nav-item.active { background:var(--surface2); color:var(--accent); }
     .sidebar-footer { margin-top:auto; padding-top:1rem; border-top:1px solid var(--border); font-size:0.8rem; color:var(--text2); }
 
+    /* Search bar */
+    .search-bar { width:100%; padding:0.6rem 1rem; background:var(--surface2); border:1.5px solid var(--border); border-radius:50px; font-size:0.88rem; color:var(--text); font-family:'DM Sans',sans-serif; outline:none; margin-bottom:1rem; }
+    .search-bar:focus { border-color:var(--accent); }
+
+    /* Edit modal */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; padding:1rem; }
+    .modal-overlay.open { display:flex; }
+    .modal-box { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:2rem; width:100%; max-width:580px; max-height:90vh; overflow-y:auto; }
+    .modal-title { font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:700; margin-bottom:1.25rem; }
+    .modal-box .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; }
+    .modal-box .form-group { display:flex; flex-direction:column; gap:0.3rem; }
+    .modal-box .form-group.full { grid-column:1/-1; }
+    .modal-box label { font-size:0.75rem; color:var(--text2); text-transform:uppercase; letter-spacing:0.5px; }
+    .modal-box input, .modal-box select, .modal-box textarea { padding:0.7rem 1rem; background:var(--surface2); border:1.5px solid var(--border); border-radius:10px; font-size:0.88rem; color:var(--text); font-family:'DM Sans',sans-serif; outline:none; }
+    .modal-box input:focus, .modal-box select:focus, .modal-box textarea:focus { border-color:var(--accent); }
+    .modal-box textarea { min-height:80px; resize:vertical; }
+
     /* Main */
     .admin-main { flex:1; padding:2rem; overflow-y:auto; }
     .admin-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; }
@@ -126,6 +143,7 @@
       <div class="sidebar-logo">Neuro<span>Zap</span></div>
       <button class="nav-item active" onclick="showTab('dashboard',this)">📊 Dashboard</button>
       <button class="nav-item" onclick="showTab('questions',this)">❓ Questions</button>
+      <button class="nav-item" onclick="showTab('daily',this)">🔥 Daily Challenge</button>
       <button class="nav-item" onclick="showTab('users',this)">👥 Users</button>
       <button class="nav-item" onclick="showTab('leaderboard',this)">🏆 Leaderboard</button>
       <button class="nav-item" onclick="showTab('settings',this)">⚙️ Settings</button>
@@ -233,6 +251,9 @@
 
         <!-- Questions Table -->
         <div class="table-wrap">
+          <div style="padding:1rem 1rem 0">
+            <input type="text" class="search-bar" id="qSearch" placeholder="🔍 Search questions by text, category..." oninput="filterQuestions()"/>
+          </div>
           <table>
             <thead>
               <tr>
@@ -246,7 +267,74 @@
         </div>
       </div>
 
-      <!-- USERS TAB -->
+      <!-- DAILY CHALLENGE TAB -->
+      <div class="tab-panel" id="tab-daily">
+
+        <!-- Today's Daily Question -->
+        <div class="form-card" style="border-color:var(--accent2);margin-bottom:1.5rem">
+          <div class="form-title">🔥 Today's Daily Challenge</div>
+          <div id="currentDailyDisplay" style="color:var(--text2);font-size:0.9rem;margin-bottom:1rem">Loading...</div>
+        </div>
+
+        <!-- Set Custom Daily Question -->
+        <div class="form-card">
+          <div class="form-title">✏️ Set Today's Daily Question</div>
+          <p style="font-size:0.85rem;color:var(--text2);margin-bottom:1rem">Write a single tough question specifically for today's daily challenge. This replaces the auto-selected one.</p>
+          <div style="display:flex;flex-direction:column;gap:0.75rem">
+            <div class="form-group">
+              <label>Daily Question Text</label>
+              <textarea id="dailyQuestion" placeholder="Write a tough brain teaser..." style="min-height:80px;padding:0.7rem 1rem;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;font-size:0.9rem;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;resize:vertical"></textarea>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+              <div class="form-group">
+                <label>Option A</label>
+                <input type="text" id="dailyA" placeholder="Option A" style="padding:0.7rem 1rem;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;outline:none"/>
+              </div>
+              <div class="form-group">
+                <label>Option B</label>
+                <input type="text" id="dailyB" placeholder="Option B" style="padding:0.7rem 1rem;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;outline:none"/>
+              </div>
+              <div class="form-group">
+                <label>Option C</label>
+                <input type="text" id="dailyC" placeholder="Option C" style="padding:0.7rem 1rem;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;outline:none"/>
+              </div>
+              <div class="form-group">
+                <label>Option D</label>
+                <input type="text" id="dailyD" placeholder="Option D" style="padding:0.7rem 1rem;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;outline:none"/>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+              <div class="form-group">
+                <label>Correct Answer</label>
+                <select id="dailyAnswer" style="padding:0.7rem 1rem;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;outline:none">
+                  <option value="0">A</option>
+                  <option value="1">B</option>
+                  <option value="2">C</option>
+                  <option value="3">D</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Date (leave blank = today)</label>
+                <input type="date" id="dailyDate" style="padding:0.7rem 1rem;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;outline:none"/>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:1rem" onclick="saveDailyQuestion()">🔥 Set as Daily Challenge</button>
+          <p id="dailyMsg" style="margin-top:0.75rem;font-size:0.85rem;display:none"></p>
+        </div>
+
+        <!-- Past Daily Questions -->
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Date</th><th>Question</th><th>Answer</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="dailyTable">
+              <tr><td colspan="4" style="text-align:center;color:var(--text2);padding:2rem">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
       <div class="tab-panel" id="tab-users">
         <div class="table-wrap">
           <table>
@@ -308,6 +396,60 @@
       </div>
 
 
+
+  <!-- EDIT QUESTION MODAL -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal-box">
+      <div class="modal-title">✏️ Edit Question</div>
+      <input type="hidden" id="editQId"/>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Question Text</label>
+          <textarea id="editQText" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Option A</label>
+          <input type="text" id="editQA"/>
+        </div>
+        <div class="form-group">
+          <label>Option B</label>
+          <input type="text" id="editQB"/>
+        </div>
+        <div class="form-group">
+          <label>Option C</label>
+          <input type="text" id="editQC"/>
+        </div>
+        <div class="form-group">
+          <label>Option D</label>
+          <input type="text" id="editQD"/>
+        </div>
+        <div class="form-group">
+          <label>Correct Answer</label>
+          <select id="editQAnswer">
+            <option value="0">A</option>
+            <option value="1">B</option>
+            <option value="2">C</option>
+            <option value="3">D</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select id="editQCategory">
+            <option value="pattern">Pattern Recognition</option>
+            <option value="spatial">Spatial Reasoning</option>
+            <option value="logic">Abstract Logic</option>
+            <option value="memory">Working Memory</option>
+            <option value="matrix">Matrix Reasoning</option>
+            <option value="general">General</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;gap:0.75rem;margin-top:1.25rem">
+        <button class="btn btn-primary" onclick="saveEditQuestion()">💾 Save Changes</button>
+        <button class="btn btn-outline" onclick="closeEditModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
 
   <script src="script.js"></script>
   <script>
@@ -381,11 +523,12 @@
       document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
       document.getElementById('tab-' + name).classList.add('active');
       if (el) el.classList.add('active');
-      const titles = { dashboard:'Dashboard', questions:'Questions', users:'Users', leaderboard:'Leaderboard', settings:'⚙️ Settings' };
+      const titles = { dashboard:'Dashboard', questions:'Questions', daily:'🔥 Daily Challenge', users:'Users', leaderboard:'Leaderboard', settings:'⚙️ Settings' };
       document.getElementById('tabTitle').textContent = titles[name] || name;
 
       if (name === 'dashboard')   loadDashboard();
       if (name === 'questions')   loadQuestions();
+      if (name === 'daily')       loadDailyTab();
       if (name === 'users')       loadUsers();
       if (name === 'leaderboard') loadLeaderboard();
     }
@@ -463,27 +606,99 @@
     }
 
     // ── Questions ─────────────────────────────────────────────
+    let allQuestions = [];
+
     async function loadQuestions() {
       const tbody = document.getElementById('questionsTable');
       try {
         const res  = await authFetch('/api/admin/questions');
-        const rows = await res.json();
-        const letters = ['A','B','C','D'];
-        if (!rows.length) { tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text2);padding:2rem">No questions yet. Add one above!</td></tr>'; return; }
-        tbody.innerHTML = rows.map(q => `
-          <tr>
-            <td>#${q.id}</td>
-            <td style="max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escHtml(q.question)}">${escHtml(q.question.substring(0,60))}…</td>
-            <td><span class="badge badge-user">${q.category}</span></td>
-            <td><strong>${letters[q.answer]}</strong></td>
-            <td><span class="badge ${q.active?'badge-active':'badge-inactive'}">${q.active?'Active':'Off'}</span></td>
-            <td style="white-space:nowrap">
-              <button class="btn btn-ghost btn-xs" onclick="toggleQuestion(${q.id},${q.active})">${q.active?'Disable':'Enable'}</button>
-              <button class="btn btn-danger btn-xs" onclick="deleteQuestion(${q.id})">Delete</button>
-            </td>
-          </tr>`).join('');
+        allQuestions = await res.json();
+        renderQuestionsTable(allQuestions);
       } catch { tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--accent)">Error loading questions</td></tr>'; }
     }
+
+    function filterQuestions() {
+      const q = document.getElementById('qSearch').value.toLowerCase();
+      const filtered = allQuestions.filter(r =>
+        r.question.toLowerCase().includes(q) ||
+        r.category.toLowerCase().includes(q)
+      );
+      renderQuestionsTable(filtered);
+    }
+
+    function renderQuestionsTable(rows) {
+      const tbody = document.getElementById('questionsTable');
+      const letters = ['A','B','C','D'];
+      if (!rows.length) {
+        tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text2);padding:2rem">No questions found.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = rows.map(q => `
+        <tr>
+          <td style="font-weight:700;color:var(--accent)">#${q.id}</td>
+          <td style="max-width:300px">
+            <div style="font-weight:500;margin-bottom:0.2rem">${escHtml(q.question.substring(0,80))}${q.question.length>80?'…':''}</div>
+            <div style="font-size:0.75rem;color:var(--text2)">
+              A: ${escHtml(q.option_a)} &nbsp;|&nbsp; B: ${escHtml(q.option_b)} &nbsp;|&nbsp; C: ${escHtml(q.option_c)} &nbsp;|&nbsp; D: ${escHtml(q.option_d)}
+            </div>
+            ${q.image_url ? '<div style="font-size:0.72rem;color:var(--accent2);margin-top:0.2rem">🖼️ Has image</div>' : ''}
+          </td>
+          <td><span class="badge badge-user">${q.category}</span></td>
+          <td><strong style="color:var(--correct,#2d9e6b)">${letters[q.answer]}</strong></td>
+          <td><span class="badge ${q.active?'badge-active':'badge-inactive'}">${q.active?'Active':'Off'}</span></td>
+          <td style="white-space:nowrap">
+            <button class="btn btn-ghost btn-xs" onclick="openEditModal(${q.id})">✏️ Edit</button>
+            <button class="btn btn-ghost btn-xs" onclick="toggleQuestion(${q.id},${q.active})">${q.active?'Disable':'Enable'}</button>
+            <button class="btn btn-danger btn-xs" onclick="deleteQuestion(${q.id})">🗑️</button>
+          </td>
+        </tr>`).join('');
+    }
+
+    // ── Edit Modal ────────────────────────────────────────────
+    function openEditModal(id) {
+      const q = allQuestions.find(r => r.id === id);
+      if (!q) return;
+      document.getElementById('editQId').value       = q.id;
+      document.getElementById('editQText').value     = q.question;
+      document.getElementById('editQA').value        = q.option_a;
+      document.getElementById('editQB').value        = q.option_b;
+      document.getElementById('editQC').value        = q.option_c;
+      document.getElementById('editQD').value        = q.option_d;
+      document.getElementById('editQAnswer').value   = q.answer;
+      document.getElementById('editQCategory').value = q.category;
+      document.getElementById('editModal').classList.add('open');
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').classList.remove('open');
+    }
+
+    async function saveEditQuestion() {
+      const id = document.getElementById('editQId').value;
+      const body = {
+        question : document.getElementById('editQText').value.trim(),
+        option_a : document.getElementById('editQA').value.trim(),
+        option_b : document.getElementById('editQB').value.trim(),
+        option_c : document.getElementById('editQC').value.trim(),
+        option_d : document.getElementById('editQD').value.trim(),
+        answer   : parseInt(document.getElementById('editQAnswer').value),
+        category : document.getElementById('editQCategory').value,
+        active   : 1
+      };
+      if (!body.question || !body.option_a || !body.option_b || !body.option_c || !body.option_d)
+        return showToast('⚠️ Fill in all fields!');
+      const res = await authFetch('/api/admin/questions/'+id, 'PUT', body);
+      if (res.ok) {
+        showToast('✅ Question updated!');
+        closeEditModal();
+        loadQuestions();
+      }
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('editModal').addEventListener('click', function(e) {
+      if (e.target === this) closeEditModal();
+    });
 
     async function addQuestion() {
       const body = {
@@ -520,7 +735,78 @@
       loadQuestions();
     }
 
-    // ── Users ─────────────────────────────────────────────────
+    // ── Daily Challenge ───────────────────────────────────────
+    async function loadDailyTab() {
+      // Load today's current daily
+      try {
+        const res  = await fetch('/api/daily');
+        const data = await res.json();
+        document.getElementById('currentDailyDisplay').innerHTML =
+          `<strong>📅 ${data.date}</strong><br/><span style="color:var(--text)">${escHtml(data.question)}</span>`;
+      } catch {
+        document.getElementById('currentDailyDisplay').textContent = 'Could not load today\'s challenge.';
+      }
+      // Load past daily questions table
+      loadDailyTable();
+      // Set today's date as default
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('dailyDate').value = today;
+    }
+
+    async function loadDailyTable() {
+      const tbody = document.getElementById('dailyTable');
+      try {
+        const res  = await authFetch('/api/admin/daily-questions');
+        const rows = await res.json();
+        const letters = ['A','B','C','D'];
+        if (!rows.length) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text2);padding:2rem">No custom daily questions yet.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = rows.map(r => `
+          <tr>
+            <td><strong>${r.date}</strong></td>
+            <td>${escHtml(r.question.substring(0,80))}${r.question.length>80?'…':''}</td>
+            <td><strong style="color:var(--accent2)">${letters[r.answer]}: ${escHtml(r['option_'+['a','b','c','d'][r.answer]])}</strong></td>
+            <td><button class="btn btn-danger btn-xs" onclick="deleteDailyQuestion(${r.id})">🗑️</button></td>
+          </tr>`).join('');
+      } catch {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--accent)">Error loading</td></tr>';
+      }
+    }
+
+    async function saveDailyQuestion() {
+      const msg = document.getElementById('dailyMsg');
+      msg.style.display = 'none';
+      const body = {
+        question : document.getElementById('dailyQuestion').value.trim(),
+        option_a : document.getElementById('dailyA').value.trim(),
+        option_b : document.getElementById('dailyB').value.trim(),
+        option_c : document.getElementById('dailyC').value.trim(),
+        option_d : document.getElementById('dailyD').value.trim(),
+        answer   : parseInt(document.getElementById('dailyAnswer').value),
+        date     : document.getElementById('dailyDate').value || new Date().toISOString().split('T')[0]
+      };
+      if (!body.question || !body.option_a || !body.option_b || !body.option_c || !body.option_d) {
+        msg.style.color = 'var(--accent)';
+        msg.textContent = '⚠️ Please fill in all fields!';
+        msg.style.display = 'block';
+        return;
+      }
+      const res = await authFetch('/api/admin/daily-questions', 'POST', body);
+      if (res.ok) {
+        showToast('🔥 Daily challenge set!');
+        ['dailyQuestion','dailyA','dailyB','dailyC','dailyD'].forEach(id => document.getElementById(id).value='');
+        loadDailyTab();
+      }
+    }
+
+    async function deleteDailyQuestion(id) {
+      if (!confirm('Delete this daily question?')) return;
+      await authFetch('/api/admin/daily-questions/'+id, 'DELETE');
+      showToast('🗑️ Deleted');
+      loadDailyTable();
+    }
     async function loadUsers() {
       const tbody = document.getElementById('usersTable');
       try {
