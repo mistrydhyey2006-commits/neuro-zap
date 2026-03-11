@@ -638,7 +638,7 @@
 
     async function clearAllResults() {
       if (!confirm('Delete ALL quiz results? This cannot be undone!')) return;
-      const res = await authFetch('/api/admin/results','DELETE');
+      const res = await authFetch('/api/admin/clear-results','DELETE');
       if (res.ok) showToast('🗑️ All results cleared');
     }
   </script>
