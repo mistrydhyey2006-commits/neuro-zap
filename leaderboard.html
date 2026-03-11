@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neuro Zap — Leaderboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Sliding theme toggle -->
+  <button class="theme-toggle" id="darkToggle" aria-label="Toggle dark mode">
+    <span class="t-sun">☀️</span>
+    <span class="t-moon">🌙</span>
+    <span class="t-knob"></span>
+  </button>
+
+  <div class="page">
+    <div class="card" style="max-width:580px">
+      <div class="lb-header">
+        <span class="lb-title">🏆 Leaderboard</span>
+        <a href="index.html" class="btn btn-outline btn-sm">← Home</a>
+      </div>
+
+      <div class="lb-list" id="lbList">
+        <!-- populated by JS -->
+      </div>
+
+      <div class="mt-2">
+        <a href="test.html" class="btn btn-primary btn-full">🧠 Take Neuro Zap</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    initDarkMode();
+    initLeaderboard();
+  </script>
+</body>
+</html>

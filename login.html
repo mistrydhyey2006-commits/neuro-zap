@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Neuro Zap — Login / Register</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <button class="theme-toggle" id="darkToggle" aria-label="Toggle dark mode">
+    <span class="t-sun">☀️</span>
+    <span class="t-moon">🌙</span>
+    <span class="t-knob"></span>
+  </button>
+
+  <div class="page">
+    <div class="card" style="max-width:420px">
+
+      <div style="text-align:center;margin-bottom:1.5rem">
+        <a href="index.html" style="text-decoration:none">
+          <div class="home-logo" style="font-size:2rem">Neuro<span style="color:var(--text)">Zap</span></div>
+        </a>
+        <p style="color:var(--text2);font-size:0.85rem;margin-top:0.3rem">Join thousands testing their IQ</p>
+      </div>
+
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Login</button>
+        <button class="auth-tab" id="tabRegister" onclick="switchTab('register')">Register</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <div id="loginForm">
+        <div style="display:flex;flex-direction:column;gap:0.75rem;margin-bottom:1rem">
+          <div>
+            <label style="font-size:0.78rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px">Username or Email</label>
+            <input type="text" class="input-field" id="loginUser" placeholder="Enter username or email" style="margin:0.3rem 0 0;border-radius:12px"/>
+          </div>
+          <div>
+            <label style="font-size:0.78rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px">Password</label>
+            <input type="password" class="input-field" id="loginPass" placeholder="Enter password" style="margin:0.3rem 0 0;border-radius:12px" onkeydown="if(event.key==='Enter')doLogin()"/>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="doLogin()">🔐 Login</button>
+        <p class="auth-msg" id="loginMsg"></p>
+      </div>
+
+      <!-- REGISTER FORM -->
+      <div id="registerForm" class="hidden">
+        <div style="display:flex;flex-direction:column;gap:0.75rem;margin-bottom:1rem">
+          <div>
+            <label style="font-size:0.78rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px">Username</label>
+            <input type="text" class="input-field" id="regUser" placeholder="Choose a username" style="margin:0.3rem 0 0;border-radius:12px"/>
+          </div>
+          <div>
+            <label style="font-size:0.78rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px">Email</label>
+            <input type="email" class="input-field" id="regEmail" placeholder="your@email.com" style="margin:0.3rem 0 0;border-radius:12px"/>
+          </div>
+          <div>
+            <label style="font-size:0.78rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px">Password</label>
+            <input type="password" class="input-field" id="regPass" placeholder="At least 6 characters" style="margin:0.3rem 0 0;border-radius:12px" onkeydown="if(event.key==='Enter')doRegister()"/>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="doRegister()">🚀 Create Account</button>
+        <p class="auth-msg" id="registerMsg"></p>
+      </div>
+
+      <div class="divider"></div>
+      <p style="text-align:center;font-size:0.83rem;color:var(--text2)">
+        <a href="index.html" style="color:var(--accent)">← Continue as guest</a>
+      </p>
+
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    initDarkMode();
+
+    // Switch to register tab if URL has #register
+    if (window.location.hash === '#register') switchTab('register');
+
+    // If already logged in, go home
+    if (localStorage.getItem('nzToken')) window.location.href = 'index.html';
+
+    function switchTab(tab) {
+      document.getElementById('loginForm').classList.toggle('hidden', tab !== 'login');
+      document.getElementById('registerForm').classList.toggle('hidden', tab !== 'register');
+      document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+      document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+    }
+
+    async function doLogin() {
+      const username = document.getElementById('loginUser').value.trim();
+      const password = document.getElementById('loginPass').value;
+      const msg = document.getElementById('loginMsg');
+      msg.className = 'auth-msg';
+
+      if (!username || !password) {
+        msg.textContent = '⚠️ Please fill in all fields'; msg.className = 'auth-msg error'; return;
+      }
+      try {
+        const res  = await fetch('/api/login', {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (!res.ok) { msg.textContent = '❌ ' + data.error; msg.className = 'auth-msg error'; return; }
+        localStorage.setItem('nzToken', data.token);
+        localStorage.setItem('nzUsername', data.username);
+        localStorage.setItem('nzRole', data.role);
+        msg.textContent = '✅ Logged in! Redirecting...'; msg.className = 'auth-msg success';
+        setTimeout(() => window.location.href = 'index.html', 800);
+      } catch {
+        msg.textContent = '❌ Cannot connect to server'; msg.className = 'auth-msg error';
+      }
+    }
+
+    async function doRegister() {
+      const username = document.getElementById('regUser').value.trim();
+      const email    = document.getElementById('regEmail').value.trim();
+      const password = document.getElementById('regPass').value;
+      const msg = document.getElementById('registerMsg');
+      msg.className = 'auth-msg';
+
+      if (!username || !email || !password) {
+        msg.textContent = '⚠️ Please fill in all fields'; msg.className = 'auth-msg error'; return;
+      }
+      if (password.length < 6) {
+        msg.textContent = '⚠️ Password must be at least 6 characters'; msg.className = 'auth-msg error'; return;
+      }
+      try {
+        const res  = await fetch('/api/register', {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ username, email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) { msg.textContent = '❌ ' + data.error; msg.className = 'auth-msg error'; return; }
+        localStorage.setItem('nzToken', data.token);
+        localStorage.setItem('nzUsername', data.username);
+        localStorage.setItem('nzRole', data.role);
+        msg.textContent = '🎉 Account created! Redirecting...'; msg.className = 'auth-msg success';
+        setTimeout(() => window.location.href = 'index.html', 800);
+      } catch {
+        msg.textContent = '❌ Cannot connect to server'; msg.className = 'auth-msg error';
+      }
+    }
+  </script>
+</body>
+</html>
