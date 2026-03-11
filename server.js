@@ -281,9 +281,28 @@ app.post('/api/admin/questions', adminMiddleware, (req, res) => {
 
 app.put('/api/admin/questions/:id', adminMiddleware, (req, res) => {
   const { question, option_a, option_b, option_c, option_d, answer, category, active, image_url } = req.body;
+  // If only 'active' is sent (toggle), do a partial update
+  if (active !== undefined && !question) {
+    db.prepare('UPDATE questions SET active=? WHERE id=?').run(active, req.params.id);
+    return res.json({ success: true });
+  }
+  // Full edit
+  const existing = db.prepare('SELECT * FROM questions WHERE id=?').get(req.params.id);
+  if (!existing) return res.status(404).json({ error: 'Not found' });
   db.prepare(
     'UPDATE questions SET question=?, option_a=?, option_b=?, option_c=?, option_d=?, answer=?, category=?, active=?, image_url=? WHERE id=?'
-  ).run(question, option_a, option_b, option_c, option_d, answer, category || 'general', active ?? 1, image_url || null, req.params.id);
+  ).run(
+    question   || existing.question,
+    option_a   || existing.option_a,
+    option_b   || existing.option_b,
+    option_c   || existing.option_c,
+    option_d   || existing.option_d,
+    answer     ?? existing.answer,
+    category   || existing.category,
+    active     ?? existing.active,
+    image_url  !== undefined ? image_url : existing.image_url,
+    req.params.id
+  );
   res.json({ success: true });
 });
 
@@ -331,23 +350,29 @@ app.delete('/api/admin/clear-results', adminMiddleware, (req, res) => {
 // ── ADMIN: Stats ─────────────────────────────────────────────
 app.get('/api/admin/stats', adminMiddleware, (req, res) => {
   res.json({
-    totalUsers    : db.prepare("SELECT COUNT(*) AS c FROM users WHERE role='user'").get().c,
-    totalQuizzes  : db.prepare('SELECT COUNT(*) AS c FROM results').get().c,
-    totalQuestions: db.prepare('SELECT COUNT(*) AS c FROM questions WHERE active=1').get().c,
-    avgIQ         : db.prepare('SELECT ROUND(AVG(iq),1) AS a FROM results').get().a || 0
+    users    : db.prepare("SELECT COUNT(*) AS c FROM users WHERE role='user'").get().c,
+    results  : db.prepare('SELECT COUNT(*) AS c FROM results').get().c,
+    questions: db.prepare('SELECT COUNT(*) AS c FROM questions WHERE active=1').get().c,
+    avg_iq   : db.prepare('SELECT ROUND(AVG(iq),1) AS a FROM results').get().a || 0
   });
 });
 
-// ── Catch-all ────────────────────────────────────────────────
+// ── Explicit HTML routes (bypass cache) ─────────────────────
+const htmlFiles = ["admin","daily","test","leaderboard","login","index"];
+htmlFiles.forEach(name => {
+  app.get("/"+name+".html", (req, res) => {
+    res.setHeader("Cache-Control","no-store,no-cache,must-revalidate");
+    res.setHeader("Pragma","no-cache");
+    res.setHeader("Expires","0");
+    res.sendFile(path.join(__dirname, name+".html"));
+  });
+});
+
+// ── Catch-all ─────────────────────────────────────────────────
 app.get('*', (req, res) => {
   if (req.path.includes('.')) return res.status(404).send('Not found');
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // ── Start ────────────────────────────────────────────────────
-
-
-// Important: bind to 0.0.0.0
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Neuro Zap running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`🚀 Neuro Zap running at http://localhost:${PORT}`));
