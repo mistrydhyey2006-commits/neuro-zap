@@ -15,7 +15,7 @@ function initDarkMode() {
   }
 }
 
-// ---- Question Bank (20 questions) ----
+// ---- Question Bank (fallback only — used if API is unavailable) ----
 const ALL_QUESTIONS = [
   {
     q: "🔢 Number Matrix — What number replaces the question mark?\n\n  2   4   8\n  3   9  27\n  4  16   ?\n\n(Each row follows the same rule)",
@@ -168,11 +168,23 @@ let quizFinished   = false;
 let skipReviewMode = false;
 
 // ================================================================
-//  INIT
+//  INIT — loads from API, falls back to ALL_QUESTIONS if API fails
 // ================================================================
-function initTest() {
-  questions = shuffle(ALL_QUESTIONS);
-  answers   = new Array(questions.length).fill(null);
+async function initTest() {
+  const apiQuestions = await loadQuestionsFromAPI();
+  if (apiQuestions && apiQuestions.length >= 10) {
+    questions = shuffle(apiQuestions.map(q => ({
+      q          : q.q,
+      options    : q.options,
+      answer     : q.answer,
+      image_url  : q.image_url || null,
+      explanation: ''
+    })));
+  } else {
+    // Fallback to hardcoded questions if API is down
+    questions = shuffle(ALL_QUESTIONS);
+  }
+  answers = new Array(questions.length).fill(null);
   renderQuestion();
   startTimer();
 }
