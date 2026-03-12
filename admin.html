@@ -274,8 +274,20 @@
     <div class="modal-box">
       <div class="modal-title">✏️ Edit Question</div>
       <input type="hidden" id="editQId"/>
+      <input type="hidden" id="editQImageUrl"/>
       <div class="form-grid">
         <div class="form-group full"><label>Question Text</label><textarea id="editQText" rows="3"></textarea></div>
+        <!-- Image section -->
+        <div class="form-group full">
+          <label>Question Image (optional)</label>
+          <div id="editImageDropZone" style="border:2px dashed var(--border);border-radius:12px;padding:1.2rem;text-align:center;cursor:pointer;transition:border-color 0.2s" onclick="document.getElementById('editQImageFile').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleEditImageDrop(event)">
+            <div id="editImageUploadPrompt" style="color:var(--text2);font-size:0.88rem">🖼️ Click or drag to replace image</div>
+            <img id="editImagePreview" src="" style="display:none;max-height:120px;max-width:100%;border-radius:8px;margin-top:0.5rem" alt="Preview"/>
+            <input type="file" id="editQImageFile" accept="image/*" style="display:none" onchange="handleEditImageSelect(event)"/>
+          </div>
+          <div id="editImageUploadStatus" style="display:none;font-size:0.8rem;margin-top:0.3rem"></div>
+          <button id="editRemoveImageBtn" class="btn btn-ghost btn-xs" style="display:none;margin-top:0.4rem;width:fit-content" onclick="removeEditImage()">✕ Remove image</button>
+        </div>
         <div class="form-group"><label>Option A</label><input type="text" id="editQA"/></div>
         <div class="form-group"><label>Option B</label><input type="text" id="editQB"/></div>
         <div class="form-group"><label>Option C</label><input type="text" id="editQC"/></div>
@@ -463,6 +475,20 @@
       document.getElementById('editQD').value        = q.option_d;
       document.getElementById('editQAnswer').value   = q.answer;
       document.getElementById('editQCategory').value = q.category;
+      // Image
+      document.getElementById('editQImageUrl').value = q.image_url || '';
+      if (q.image_url) {
+        document.getElementById('editImagePreview').src = q.image_url;
+        document.getElementById('editImagePreview').style.display = 'block';
+        document.getElementById('editImageUploadPrompt').style.display = 'none';
+        document.getElementById('editRemoveImageBtn').style.display = 'block';
+      } else {
+        document.getElementById('editImagePreview').src = '';
+        document.getElementById('editImagePreview').style.display = 'none';
+        document.getElementById('editImageUploadPrompt').style.display = 'block';
+        document.getElementById('editRemoveImageBtn').style.display = 'none';
+      }
+      document.getElementById('editImageUploadStatus').style.display = 'none';
       document.getElementById('editModal').classList.add('open');
     }
 
@@ -480,11 +506,44 @@
         option_d:document.getElementById('editQD').value.trim(),
         answer:parseInt(document.getElementById('editQAnswer').value),
         category:document.getElementById('editQCategory').value,
+        image_url:document.getElementById('editQImageUrl').value || null,
         active:1
       };
       if (!body.question||!body.option_a||!body.option_b||!body.option_c||!body.option_d) return showToast('⚠️ Fill in all fields!');
       const res = await authFetch('/api/admin/questions/'+id,'PUT',body);
       if (res.ok) { showToast('✅ Updated!'); closeEditModal(); loadQuestions(); }
+    }
+
+    // ── Edit Modal Image Upload ────────────────────────────────
+    async function handleEditImageSelect(e) { if (e.target.files[0]) await uploadEditImage(e.target.files[0]); }
+    function handleEditImageDrop(e) { e.preventDefault(); document.getElementById('editImageDropZone').style.borderColor='var(--border)'; if(e.dataTransfer.files[0]) uploadEditImage(e.dataTransfer.files[0]); }
+
+    async function uploadEditImage(file) {
+      const status = document.getElementById('editImageUploadStatus');
+      status.style.display='block'; status.style.color='var(--text2)'; status.textContent='Uploading...';
+      try {
+        const fd = new FormData(); fd.append('image', file);
+        const res = await fetch('/api/admin/upload-image', { method:'POST', headers:{'Authorization':'Bearer '+token}, body:fd });
+        const data = await res.json();
+        if (data.url) {
+          document.getElementById('editQImageUrl').value = data.url;
+          document.getElementById('editImagePreview').src = data.url;
+          document.getElementById('editImagePreview').style.display = 'block';
+          document.getElementById('editImageUploadPrompt').style.display = 'none';
+          document.getElementById('editRemoveImageBtn').style.display = 'block';
+          status.style.color='#2d9e6b'; status.textContent='✅ Uploaded!';
+        }
+      } catch { status.style.color='var(--accent)'; status.textContent='❌ Upload failed'; }
+    }
+
+    function removeEditImage() {
+      document.getElementById('editQImageUrl').value = '';
+      document.getElementById('editQImageFile').value = '';
+      document.getElementById('editImagePreview').src = '';
+      document.getElementById('editImagePreview').style.display = 'none';
+      document.getElementById('editImageUploadPrompt').style.display = 'block';
+      document.getElementById('editRemoveImageBtn').style.display = 'none';
+      document.getElementById('editImageUploadStatus').style.display = 'none';
     }
 
     // ── Image Upload ──────────────────────────────────────────
