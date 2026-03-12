@@ -6,7 +6,12 @@ const bcrypt   = require('bcryptjs');
 const path     = require('path');
 
 const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'neurozap.db');
-const db      = new Database(DB_PATH);
+
+// Ensure directory exists (required for Railway volume)
+const fs = require('fs');
+fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
+
+const db = new Database(DB_PATH);
 db.pragma('journal_mode = WAL');
 
 // ---- Create tables ----
