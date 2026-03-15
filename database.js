@@ -73,100 +73,196 @@ if (!adminExists) {
 }
 
 // ---- Seed questions — runs ONCE only if table is empty ----
-// After first deploy, manage all questions via the admin dashboard.
 const questionsExist = db.prepare('SELECT id FROM questions LIMIT 1').get();
 if (!questionsExist) {
-  console.log('🌱 Seeding 20 starter questions...');
+  console.log('🌱 Seeding 40 starter questions...');
   const insert = db.prepare(
     `INSERT INTO questions (question, option_a, option_b, option_c, option_d, answer, category)
      VALUES (?, ?, ?, ?, ?, ?, ?)`
   );
 
   const seed = db.transaction(() => {
+
+    // ── NUMBER SERIES ────────────────────────────────────────
     insert.run(
-      '🔢 Number Matrix — What number replaces the question mark?\n\n  2   4   8\n  3   9  27\n  4  16   ?\n\n(Each row: n, n², n³)',
-      '64', '48', '32', '256', 0, 'matrix'
+      '🔢 Find the next number:\n\n  3,  6,  11,  18,  27,  ?\n\n(Differences increase by 2 each step: +3, +5, +7, +9, +11)',
+      '36', '37', '38', '39', 1, 'pattern'
     );
     insert.run(
-      '🔷 Pattern Series — Which comes next?\n\n  △  △△  △△△  △△△△  ?\n\nEach step adds one triangle and rotates 90° clockwise.',
-      '5 triangles rotated 90°', '4 triangles rotated 180°', '5 triangles, no rotation', '6 triangles rotated 90°', 0, 'pattern'
+      '🔢 Find the next number:\n\n  2,  3,  5,  9,  17,  33,  ?\n\n(Each term = previous × 2 − 1)',
+      '60', '63', '65', '67', 2, 'pattern'
     );
     insert.run(
-      '🧠 Abstract Logic — A 3×3 grid alternates between two inverse patterns. The 3rd matrix = same as the 1st. The bottom-right cell of matrix 1 is ■. What is the bottom-right cell of the 3rd matrix?',
-      '■ (filled)', '□ (empty)', 'Half filled', 'Cannot determine', 0, 'logic'
+      '🔢 Find the missing number:\n\n  1,  4,  9,  16,  25,  ?,  49\n\n(Each number is a perfect square)',
+      '35', '36', '37', '38', 1, 'pattern'
     );
     insert.run(
-      '🔢 Working Memory — Find the next number:\n\n  7 → 14 → 11 → 22 → 19 → 38 → ?\n\n(Rule alternates: ×2, then −3)',
-      '35', '41', '76', '32', 0, 'memory'
+      '🔢 Find the next number:\n\n  100,  91,  83,  76,  70,  ?\n\n(Differences decrease by 1: −9, −8, −7, −6, −5)',
+      '63', '64', '65', '66', 2, 'pattern'
     );
     insert.run(
-      '🔷 Spatial Reasoning — A paper square is folded in half diagonally, then a hole is punched through the centre. When unfolded, how many holes appear?',
-      '1', '2', '4', '3', 1, 'spatial'
+      '🔢 Find the missing value:\n\n  1,  1,  2,  6,  24,  120,  ?\n\n(Each term = previous × its position index)',
+      '620', '700', '720', '740', 2, 'pattern'
     );
     insert.run(
-      '🧩 Odd One Out — Which does NOT belong?\n\nA) All sides equal AND all angles equal\nB) All sides equal but angles differ\nC) All angles equal but sides differ\nD) Has 4 lines of symmetry',
-      'A', 'B', 'C', 'D', 2, 'logic'
+      '🔢 Find the next number:\n\n  2,  5,  11,  23,  47,  ?\n\n(Each term = previous × 2 + 1)',
+      '93', '95', '96', '97', 1, 'pattern'
     );
     insert.run(
-      '🔢 Number Series — Find the next number:\n\n  1, 1, 2, 3, 5, 8, 13, 21, ?',
-      '32', '34', '33', '36', 1, 'pattern'
+      '🔢 Find the next number:\n\n  0,  1,  3,  6,  10,  15,  ?\n\n(Triangular numbers: differences +1, +2, +3, +4...)',
+      '19', '20', '21', '22', 2, 'pattern'
     );
     insert.run(
-      '🧠 Logical Deduction:\n\nAll Zyrens are Blipps.\nSome Blipps are Quorns.\nNo Quorns are Zyrens.\n\nWhich conclusion MUST be true?',
-      'Some Zyrens are Quorns', 'No Zyrens are Quorns', 'All Quorns are Blipps', 'Some Blipps are not Zyrens', 3, 'logic'
+      '🔢 Find the next number:\n\n  3,  7,  15,  31,  63,  ?\n\n(Each term = previous × 2 + 1)',
+      '125', '126', '127', '128', 2, 'pattern'
+    );
+
+    // ── MATRIX / GRID ────────────────────────────────────────
+    insert.run(
+      '🔷 Number Grid — Find the missing number:\n\n  2   4   8\n  3   6   12\n  4   8   ?\n\n(Each row: col1 × 2 = col2, col1 × 4 = col3)',
+      '12', '14', '16', '18', 2, 'matrix'
     );
     insert.run(
-      '🔷 Rotation — A cube has ● on top, ★ on front, ▲ on right. It is rotated 90° to the right. What is now on top?',
-      '★', '▲', '●', 'The bottom face', 0, 'spatial'
+      '🔷 Number Grid — Find the missing number:\n\n  16   4   2\n  25   5   2.5\n  36   6   ?\n\n(Col2 = √Col1, Col3 = Col2 ÷ 2)',
+      '2', '3', '4', '5', 1, 'matrix'
     );
     insert.run(
-      '🔢 Missing Number in Grid:\n\n  6   11   8\n  9   15  12\n  7    ?  10\n\n(Pattern: middle = left + right − 5)',
-      '11', '12', '13', '10', 1, 'matrix'
+      '🔷 Number Grid — Find the missing number:\n\n  1   2   3\n  4   8   12\n  7   14  ?\n\n(Col2 = Col1 × 2, Col3 = Col1 × 3)',
+      '18', '20', '21', '24', 2, 'matrix'
     );
     insert.run(
-      '🧩 Visual Pattern — Letters transform:\n\n  A → D → G → J → ?\n\n(Each letter moves +3 positions in the alphabet)',
-      'L', 'M', 'K', 'N', 1, 'pattern'
+      '🔷 Number Grid — Find the missing number:\n\n  5   3   8\n  7   2   9\n  6   4   ?\n\n(Each row: col1 + col2 = col3)',
+      '8', '9', '10', '11', 2, 'matrix'
     );
     insert.run(
-      '🧠 Spatial Folding — Which 3D shape is formed when this net is folded?\n\nNet: 1 square in the centre with 4 triangles attached to each side.',
-      'Cube', 'Square Pyramid', 'Tetrahedron', 'Triangular Prism', 1, 'spatial'
+      '🔷 Number Grid — Find the missing number:\n\n  4   16   64\n  3   9    27\n  2   4    ?\n\n(Each row: col1², col1³)',
+      '6', '7', '8', '9', 2, 'matrix'
+    );
+
+    // ── LOGICAL DEDUCTION ────────────────────────────────────
+    insert.run(
+      '🧠 Logical Deduction:\n\nAll doctors are educated.\nSome educated people are rich.\nNo rich person is unhappy.\n\nWhich MUST be true?',
+      'All doctors are rich', 'Some educated people are not rich', 'All rich people are educated', 'No doctor is unhappy', 1, 'logic'
     );
     insert.run(
-      '🔢 Working Memory — What is the sum of ONLY the odd numbers in this list?\n\n  12,  7,  3,  18,  5,  22,  9,  14',
-      '19', '24', '29', '21', 1, 'memory'
+      '🧠 Logical Deduction:\n\nIf it rains, the match is cancelled.\nThe match was NOT cancelled.\n\nWhat can we conclude?',
+      'It rained', 'It did not rain', 'The match was played inside', 'It might have rained', 1, 'logic'
     );
     insert.run(
-      '🔷 Matrix Reasoning — 3×3 grid:\n\nRow 1: ○  ○○  ○○○\nRow 2: □  □□  □□□\nRow 3: △  △△   ?\n\nWhat fills the missing cell?',
-      '△△△', '○○○', '□□', '△△', 0, 'matrix'
+      '🧠 Logical Deduction:\n\nAll squares are rectangles.\nAll rectangles are parallelograms.\nShape X is a square.\n\nWhich MUST be true?',
+      'X is a parallelogram', 'X is not a rectangle', 'X has unequal sides', 'X is a rhombus', 0, 'logic'
     );
     insert.run(
-      '🧠 Abstract Analogy:\n\nSolid Circle : Hollow Circle  =  Solid Square : ?\n\n(Filled shape becomes outline only)',
-      'Hollow Square', 'Solid Triangle', 'Filled Diamond', 'Smaller Square', 0, 'logic'
+      '🧠 Logical Deduction:\n\nNo cats are dogs.\nSome animals are cats.\nAll dogs are animals.\n\nWhich MUST be true?',
+      'Some animals are not dogs', 'All cats are animals', 'No animals are dogs', 'Some cats are dogs', 1, 'logic'
     );
     insert.run(
-      '🔢 Number Pattern — What replaces the ?:\n\n  144 → 12 → 3\n   81 →  9 → 3\n   64 →  8 → ?\n\n(Each step: √ of previous number)',
-      '2', '4', '2.83', '3', 2, 'pattern'
+      '🧠 Coded Language:\n\nIf C=3, O=15, L=12, D=4\nthen COLD = ?\n\n(Sum of letter positions in alphabet)',
+      '34', '35', '36', '37', 0, 'logic'
     );
     insert.run(
-      '🧩 Odd One Out — Which number does NOT belong?\n\n  121,  144,  169,  196,  210,  225',
-      '169', '196', '210', '225', 2, 'logic'
+      '🧠 Coded Language:\n\nIf ARMY = 46, then NAVY = ?\n\n(Sum of letter positions: A=1, B=2 ... Z=26)',
+      '54', '55', '56', '57', 2, 'logic'
+    );
+
+    // ── SPATIAL REASONING ────────────────────────────────────
+    insert.run(
+      '🔷 Spatial Reasoning:\n\nA cube has all 6 faces painted red. It is cut into 27 equal smaller cubes.\nHow many small cubes have NO red face at all?',
+      '0', '1', '2', '3', 1, 'spatial'
     );
     insert.run(
-      '🔷 Spatial Reasoning — A shape viewed from front shows 3 columns of height 3, 2, 1 (left to right) and is 2 units deep. How many cubes are needed to build it?',
-      '10', '12', '11', '14', 1, 'spatial'
+      '🔷 Spatial Reasoning:\n\nHow many faces does a solid have if it has 8 vertices and 12 edges?\n\n(Euler\'s formula: Faces + Vertices − Edges = 2)',
+      '4', '5', '6', '8', 2, 'spatial'
     );
     insert.run(
-      '🧠 Inductive Reasoning — Sequence of symbols:\n\n  ◆ ◇ ◆◆ ◇◇ ◆◆◆ ◇◇◇ …\n\nWhat is the 10th symbol group?',
-      '◆◆◆◆◆', '◇◇◇◇◇', '◆◆◆◆◆◆', '◇◇◇◇', 1, 'logic'
+      '🔷 Spatial Reasoning:\n\nA clock shows 3:15.\nWhat is the angle between the hour and minute hands?',
+      '0°', '7.5°', '15°', '22.5°', 1, 'spatial'
     );
     insert.run(
-      '🔢 Advanced Series — Find the missing value:\n\n  2, 6, 12, 20, 30, 42, ?\n\n(Differences between terms: 4, 6, 8, 10, 12, …)',
-      '52', '54', '56', '58', 2, 'pattern'
+      '🔷 Spatial Reasoning:\n\nA cube is painted on all sides and cut into 64 equal smaller cubes.\nHow many small cubes have paint on exactly 2 faces?',
+      '16', '24', '32', '48', 1, 'spatial'
     );
+    insert.run(
+      '🔷 Spatial Reasoning:\n\nA rectangular box is 4cm × 3cm × 2cm.\nHow many unit cubes (1cm³) fit inside it?',
+      '18', '20', '24', '28', 2, 'spatial'
+    );
+
+    // ── WORKING MEMORY ───────────────────────────────────────
+    insert.run(
+      '🧠 Working Memory:\n\nSequence: 7, 3, 9, 1, 5, 8, 2\n\nWhat is the sum of the 2nd, 4th, and 6th numbers?',
+      '10', '11', '12', '13', 2, 'memory'
+    );
+    insert.run(
+      '🧠 Working Memory:\n\nList: 15, 8, 23, 4, 16, 42, 7\n\nWhat is the difference between the largest and smallest numbers?',
+      '35', '37', '38', '39', 2, 'memory'
+    );
+    insert.run(
+      '🧠 Working Memory:\n\nRed = 3, Blue = 7, Green = 5, Yellow = 2\n\nWhat is (Red × Green) + Blue − Yellow?',
+      '18', '19', '20', '21', 2, 'memory'
+    );
+    insert.run(
+      '🧠 Working Memory:\n\nA train stops at 8 stations. It picks up 12 passengers at each of the first 3 stops, and drops off 8 passengers at each of the next 3 stops.\n\nHow many passengers are on the train after 6 stops? (Starts empty)',
+      '10', '11', '12', '13', 2, 'memory'
+    );
+
+    // ── ANALOGIES ────────────────────────────────────────────
+    insert.run(
+      '🧩 Analogy:\n\nMoon : Earth  =  Earth : ?\n',
+      'Mars', 'Galaxy', 'Sun', 'Universe', 2, 'logic'
+    );
+    insert.run(
+      '🧩 Analogy:\n\n36 : 6  =  81 : ?\n\n(Relationship: perfect square to its square root)',
+      '7', '8', '9', '10', 2, 'logic'
+    );
+    insert.run(
+      '🧩 Analogy:\n\nOptimist : Pessimist  =  Diligent : ?\n',
+      'Lazy', 'Slow', 'Tired', 'Careful', 0, 'logic'
+    );
+    insert.run(
+      '🧩 Analogy:\n\nChapter : Book  =  Scene : ?\n',
+      'Story', 'Film', 'Act', 'Script', 1, 'logic'
+    );
+
+    // ── ODD ONE OUT ──────────────────────────────────────────
+    insert.run(
+      '🧩 Odd One Out — Which does NOT belong?\n\n  17,  23,  31,  37,  42,  47\n\n(All others are prime numbers)',
+      '31', '37', '42', '47', 2, 'logic'
+    );
+    insert.run(
+      '🧩 Odd One Out — Which does NOT belong?\n\n  Cube, Sphere, Cylinder, Triangle, Cone\n\n(All others are 3D shapes)',
+      'Cube', 'Sphere', 'Cylinder', 'Triangle', 3, 'logic'
+    );
+    insert.run(
+      '🧩 Odd One Out — Which does NOT belong?\n\n  1,  4,  9,  15,  25,  36\n\n(All others are perfect squares)',
+      '9', '15', '25', '36', 1, 'logic'
+    );
+    insert.run(
+      '🧩 Odd One Out — Which does NOT belong?\n\n  Violin,  Guitar,  Flute,  Cello,  Harp\n\n(All others are string instruments)',
+      'Violin', 'Guitar', 'Flute', 'Cello', 2, 'logic'
+    );
+
+    // ── ADVANCED REASONING ───────────────────────────────────
+    insert.run(
+      '🧠 Advanced:\n\nA snail climbs 3m up a wall during the day and slides 1m down at night.\nThe wall is 12m tall. How many days does it take to reach the top?',
+      '5', '6', '7', '8', 1, 'logic'
+    );
+    insert.run(
+      '🧠 Advanced:\n\nIn a race, you overtake the person in 2nd place.\nWhat position are you in now?',
+      '1st', '2nd', '3rd', '4th', 1, 'logic'
+    );
+    insert.run(
+      '🧠 Advanced:\n\nHow many times does the digit 9 appear when writing all integers from 1 to 100?',
+      '10', '11', '20', '21', 2, 'logic'
+    );
+    insert.run(
+      '🧠 Advanced:\n\nA bat and a ball cost ₹110 together.\nThe bat costs ₹100 more than the ball.\nHow much does the ball cost?',
+      '₹5', '₹10', '₹15', '₹20', 0, 'logic'
+    );
+
   });
 
   seed();
-  console.log('✅ 20 questions seeded successfully!');
+  console.log('✅ 40 questions seeded successfully!');
 }
 
 module.exports = db;
