@@ -430,7 +430,16 @@ function finishQuiz() {
     if (answers[i] === q.answer) score++;
   });
 
-  const iq    = Math.round(70 + (score / questions.length) * 60);
+  const ratio = score / questions.length;
+let iq;
+if      (ratio <= 0.15) iq = Math.round(55  + (ratio / 0.15) * 15);        // 55–70
+else if (ratio <= 0.30) iq = Math.round(70  + ((ratio - 0.15) / 0.15) * 15); // 70–85
+else if (ratio <= 0.50) iq = Math.round(85  + ((ratio - 0.30) / 0.20) * 15); // 85–100
+else if (ratio <= 0.65) iq = Math.round(100 + ((ratio - 0.50) / 0.15) * 12); // 100–112
+else if (ratio <= 0.80) iq = Math.round(112 + ((ratio - 0.65) / 0.15) * 10); // 112–122
+else if (ratio <= 0.90) iq = Math.round(122 + ((ratio - 0.80) / 0.10) * 8);  // 122–130
+else                    iq = Math.round(130 + ((ratio - 0.90) / 0.10) * 15); // 130–145
+iq = Math.min(145, Math.max(55, iq));
   const level = getIQLevel(iq);
 
   document.getElementById('quizSection').classList.add('hidden');
