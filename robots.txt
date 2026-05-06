@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin.html
 
-Sitemap: https://neuro-zap-production.up.railway.app/sitemap.xml
+Sitemap: https://neuro-zap.vercel.app/sitemap.xml
