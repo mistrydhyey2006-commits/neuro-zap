@@ -315,7 +315,7 @@
   <script src="script.js"></script>
   <script>
     initDarkMode();
-    const API = '';
+    const API = 'https://your-backend-url.com';
     let token = localStorage.getItem('adminToken');
     let adminUsername = '';
     if (token) tryAutoLogin();
@@ -326,7 +326,7 @@
       const errEl = document.getElementById('loginErr');
       errEl.style.display = 'none';
       try {
-        const res  = await fetch('/api/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username,password}) });
+        const res  = await fetch(API + '/api/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username,password}) });
         const data = await res.json();
         if (!res.ok) { errEl.textContent=data.error; errEl.style.display='block'; return; }
         if (data.role !== 'admin') { errEl.textContent='Admin access only.'; errEl.style.display='block'; return; }
@@ -338,7 +338,7 @@
 
     async function tryAutoLogin() {
       try {
-        const res = await fetch('/api/admin/stats', { headers:{'Authorization':'Bearer '+token} });
+        const res = await fetch(API + '/api/admin/stats', { headers:{'Authorization':'Bearer '+token} });
         if (res.ok) { showAdmin(localStorage.getItem('adminUser')||'admin'); loadDashboard(); }
         else { localStorage.removeItem('adminToken'); }
       } catch {}
@@ -374,7 +374,7 @@
     function authFetch(url, method='GET', body=null) {
       const opts = { method, headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'} };
       if (body) opts.body = JSON.stringify(body);
-      return fetch(url, opts);
+      return fetch(API + url, opts);
     }
 
     function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -583,7 +583,7 @@
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('dailyDate').value = today;
       try {
-        const res  = await fetch('/api/daily');
+        const res  = await fetch(API + '/api/daily');
         const data = await res.json();
         document.getElementById('currentDailyDisplay').innerHTML =
           `<strong>📅 ${data.date}</strong><br/><span style="color:var(--text)">${escHtml(data.question)}</span>${data.is_custom?'<span class="badge badge-active" style="margin-left:0.5rem">Custom</span>':'<span class="badge badge-user" style="margin-left:0.5rem">Auto</span>'}`;
@@ -662,7 +662,7 @@
     async function loadLeaderboard() {
       const tbody = document.getElementById('lbTable');
       try {
-        const res  = await fetch('/api/leaderboard');
+        const res  = await fetch(API + '/api/leaderboard');
         const rows = await res.json();
         tbody.innerHTML = rows.map((r,i)=>`
           <tr>
