@@ -75,14 +75,16 @@
   </div>
 
   <script src="script.js"></script>
+  <script src="appwrite.js"></script>
   <script>
     initDarkMode();
 
-    // Switch to register tab if URL has #register
     if (window.location.hash === '#register') switchTab('register');
 
     // If already logged in, go home
-    if (localStorage.getItem('nzToken')) window.location.href = 'index.html';
+    NZAuth.isLoggedIn().then(loggedIn => {
+      if (loggedIn) window.location.href = 'index.html';
+    });
 
     function switchTab(tab) {
       document.getElementById('loginForm').classList.toggle('hidden', tab !== 'login');
@@ -98,31 +100,21 @@
       msg.className = 'auth-msg';
 
       if (!username || !password) {
-        msg.textContent = '⚠️ Please fill in all fields'; msg.className = 'auth-msg error'; return;
-      }
-
-      // If looks like email, validate full format
-      if (username.includes('@')) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(username)) {
-          msg.textContent = '⚠️ Please enter a valid email address'; msg.className = 'auth-msg error'; return;
-        }
+        msg.textContent = '⚠️ Please fill in all fields';
+        msg.className = 'auth-msg error';
+        return;
       }
 
       try {
-        const res  = await fetch('/api/login', {
-          method: 'POST', headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({ username, password })
-        });
-        const data = await res.json();
-        if (!res.ok) { msg.textContent = '❌ ' + data.error; msg.className = 'auth-msg error'; return; }
-        localStorage.setItem('nzToken', data.token);
-        localStorage.setItem('nzUsername', data.username);
-        localStorage.setItem('nzRole', data.role);
-        msg.textContent = '✅ Logged in! Redirecting...'; msg.className = 'auth-msg success';
+        const profile = await NZAuth.login(username, password);
+        localStorage.setItem('nzUsername', profile.username);
+        localStorage.setItem('nzRole', profile.role);
+        msg.textContent = '✅ Logged in! Redirecting...';
+        msg.className = 'auth-msg success';
         setTimeout(() => window.location.href = 'index.html', 800);
-      } catch {
-        msg.textContent = '❌ Cannot connect to server'; msg.className = 'auth-msg error';
+      } catch (e) {
+        msg.textContent = '❌ ' + (e.message || 'Invalid username or password');
+        msg.className = 'auth-msg error';
       }
     }
 
@@ -134,30 +126,21 @@
       msg.className = 'auth-msg';
 
       if (!username || !email || !password) {
-        msg.textContent = '⚠️ Please fill in all fields'; msg.className = 'auth-msg error'; return;
+        msg.textContent = '⚠️ Please fill in all fields';
+        msg.className = 'auth-msg error';
+        return;
       }
-      // Validate full email format
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        msg.textContent = '⚠️ Please enter a valid email address (e.g. name@gmail.com)'; msg.className = 'auth-msg error'; return;
-      }
-      if (password.length < 6) {
-        msg.textContent = '⚠️ Password must be at least 6 characters'; msg.className = 'auth-msg error'; return;
-      }
+
       try {
-        const res  = await fetch('/api/register', {
-          method: 'POST', headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({ username, email, password })
-        });
-        const data = await res.json();
-        if (!res.ok) { msg.textContent = '❌ ' + data.error; msg.className = 'auth-msg error'; return; }
-        localStorage.setItem('nzToken', data.token);
-        localStorage.setItem('nzUsername', data.username);
-        localStorage.setItem('nzRole', data.role);
-        msg.textContent = '🎉 Account created! Redirecting...'; msg.className = 'auth-msg success';
+        const profile = await NZAuth.register(username, email, password);
+        localStorage.setItem('nzUsername', profile.username);
+        localStorage.setItem('nzRole', profile.role);
+        msg.textContent = '🎉 Account created! Redirecting...';
+        msg.className = 'auth-msg success';
         setTimeout(() => window.location.href = 'index.html', 800);
-      } catch {
-        msg.textContent = '❌ Cannot connect to server'; msg.className = 'auth-msg error';
+      } catch (e) {
+        msg.textContent = '❌ ' + (e.message || 'Registration failed');
+        msg.className = 'auth-msg error';
       }
     }
   </script>
